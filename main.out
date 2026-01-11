@@ -2,6 +2,13 @@
 \BOOKMARK [1][-]{section.1.1}{数値計算向きの言語\(C++, Fortran\)}{chapter.1}% 2
 \BOOKMARK [2][-]{subsection.1.1.1}{C++について}{section.1.1}% 3
 \BOOKMARK [2][-]{subsection.1.1.2}{Fortranについて}{section.1.1}% 4
-\BOOKMARK [1][-]{section.1.2}{補助としての言語\(Python\)}{chapter.1}% 5
-\BOOKMARK [1][-]{section.1.3}{近年注目されている言語\(Julia\)}{chapter.1}% 6
-\BOOKMARK [1][-]{section.1.4}{C++で使える高速数値計算ライブラリ}{chapter.1}% 7
+\BOOKMARK [2][-]{subsection.1.1.3}{Python3について}{section.1.1}% 5
+\BOOKMARK [2][-]{subsection.1.1.4}{近年注目されている言語\(Julia\)}{section.1.1}% 6
+\BOOKMARK [1][-]{section.1.2}{C++で使える高速数値計算ライブラリ}{chapter.1}% 7
+\BOOKMARK [2][-]{subsection.1.2.1}{BLAS/LAPACK\(線形代数用ライブラリ\)}{section.1.2}% 8
+\BOOKMARK [2][-]{subsection.1.2.2}{FFTW3\(フーリエ変換\)}{section.1.2}% 9
+\BOOKMARK [2][-]{subsection.1.2.3}{OpenMP\(並列計算\)}{section.1.2}% 10
+\BOOKMARK [1][-]{section.1.3}{C++の文法速習}{chapter.1}% 11
+\BOOKMARK [1][-]{section.1.4}{C++による対角化}{chapter.1}% 12
+\BOOKMARK [2][-]{subsection.1.4.1}{zheevの引数}{section.1.4}% 13
+\BOOKMARK [2][-]{subsection.1.4.2}{対角化の手順}{section.1.4}% 14
