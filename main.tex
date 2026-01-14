@@ -99,12 +99,15 @@ BLASはベクトルおよび行列に対する基本的な演算を提供する�
 \subsection{OpenMP(並列計算)}
 ループ計算を行うとき、メモリ並列を行って複数の計算を同時に行うことで時間が短縮できることがあります。その手段としてOpenMPが用いられます。並列化にはMPIという手段もありますが、MPIはプロセスごとに情報の通信を行う必要があり、やや学習コストが高いものとなっています。スレッド並列なので既存のコードをほとんど変えずに並列化可能なのが利点とも言えます。
 
+\chapter{C++による数値計算の基礎}
+
 \section{C++の文法速習}
 
 \section{C++による対角化}
 本節では、C++からLAPACKを呼び出してエルミート行列を対角化するための手順をまとめます。複素行列を扱うか実対称行列を扱うかで用いるLAPACKのルーチンが異なる点にも注意すべきですが、呼び出し自体は数行で済みます。
 対角化には、エルミート行列を対角化するzheevか、dsyevを用います。LAPACKはもともとFortranで用いられていたライブラリであるため、column-majorでメモリの連続領域に格納されています。そこでC++ではs\texttt{td::vector<std::complex<double>>}を用いることで、要素$H_{ij}$に$H[i + N*j]$としてアクセスすることにします。
 \subsection{zheevの引数}
+zheevの引数はこちらが考えて指定するものはそれほど多くなく、慣れれば簡単に実装できるようになりますが、一応各引数の説明をします。
 \begin{itemize}
   \item \texttt{jobz} : char型。'V'か'N'の値をとる。'V'では固有値と固有ベクトルを計算する。'N'では固有値のみを計算する。
   \item \texttt{uplo} : char型。'U'か'L'の値を取る。エルミート行列は上三角部分と下三角部分さえ参照すれば全体の情報が分かるので、どちらの部分を参照するかを指定する。
@@ -142,6 +145,39 @@ zheevは入力で与えた行列を上書きするので、元のハミルトニ
   \item 固有値は実数である
   \item 固有ベクトルは正規直交系をなす
 \end{itemize}
+
+固有ベクトルが正規直交基底をなすということは、固有ベクトルを並べた行列$V$が$V^{\dagger}V = \mathcal{I}$を満たすということですから、これを計算することによって対角化が正しくできているかを確認できるといえるでしょう。
+
+\section{C++によるFFTW3を用いたフーリエ変換}
+次にFFTWを用いたフーリエ変換の解説に移ります。使用には\texttt{<fftw3.h>}をインクルードする必要があります。コンパイル時にもリンクを指定する必要があり、\texttt{-lfftw3
+}とします。
+
+\subsection{fftw_plan fftw_plan_dft_2dの引数}
+\begin{itemize}
+  \item \texttt{n0} : int型。第1次元の格子点の数。
+  \item \texttt{n1} : int型。第2次元の格子点の数。
+  \item \texttt{in} : fftw_complex*型。入力となる複素数配列を示す。実部と虚部を切り分ける必要があり、ある数aに対して\texttt{in[ix * n1 + iy][0] = a.real(); in[ix * n1 + iy][1] = a.imag();}を指定しなければならない。
+  \item \texttt{out} : fftw_complex*型。出力用の複素数配列。入力の配列が破壊されてしまうことを許容すれば\texttt{in == out}としてもよい。
+  \item \texttt{sign} : int型。指定可能な値は\texttt{FFTW_FORWARD}か\texttt{FFTW_BACKWARD}の2つである。それぞれ順変換と逆変換に対応する。逆変換後には正規化を行うべし。
+  \item \texttt{flags} : unsigned型。\texttt{FFTW_ESTIMATE}と\texttt{FFTW_MEASURE}の2つがある。
+\end{itemize}
+
+\subsection{フーリエ変換の手順}
+ここでは、実空間表示の関数を波数空間の関数にフーリエ変換する関数を作ってみましょう。実空間表示の関数として、ここでは2次元格子上ローレンチアン
+\begin{equation}
+  f(x,y) = \frac{\delta^2}{x^2+y^2+\delta^2}
+\end{equation}
+を採用します。2次元フーリエ変換
+\begin{equation}
+  F(k_x,k_y) = \sum_{x,y} e^{-i(k_x x+ k_y y)} f(x,y)
+\end{equation}
+をFFTWで数値計算して波数空間上にプロットします。なお上のようなローレンチアンのフーリエ変換は厳密解が知られていて
+\begin{equation}
+  F(k_x,k_y) = e^{-\delta |k|}
+\end{equation}
+です。
+
+\section{C++によるOpenMPを用いた並列計算}
 
 \begin{thebibliography}{9}
   \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).

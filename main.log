@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.141592653-p3.9.1-210218-2.6 (utf8.euc) (TeX Live 2022/dev/Debian) (preloaded format=platex 2024.4.8)  12 JAN 2026 01:50
+This is e-pTeX, Version 3.141592653-p3.9.1-210218-2.6 (utf8.euc) (TeX Live 2022/dev/Debian) (preloaded format=platex 2024.4.8)  14 JAN 2026 10:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -527,19 +527,23 @@ LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <14.4> not available
 (Font)              Font shape `JY1/gt/m/n' tried instead on input line 67.
 [2
 
-] [3] [4] [5] [6] [7
+] [3] [4]
+第 2 章
+[5
+
+] [6] [7] [8
 
 ] (./main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 5AF46AE1CD955C505799AC42C471FD39;1103.
+(rerunfilecheck)             Checksum: 6E352443EF070D4DA2AB2E96BBB4DADD;1537.
  ) 
 Here is how much of TeX's memory you used:
- 13118 strings out of 478741
- 201287 string characters out of 5860983
- 526003 words of memory out of 5000000
- 31319 multiletter control sequences out of 15000+600000
+ 13124 strings out of 478741
+ 201378 string characters out of 5860983
+ 527481 words of memory out of 5000000
+ 31325 multiletter control sequences out of 15000+600000
  494114 words of font info for 125 fonts, out of 8000000 for 9000
  929 hyphenation exceptions out of 8191
- 65i,8n,67p,813b,355s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 65i,8n,67p,813b,405s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on main.dvi (8 pages, 37948 bytes).
+Output written on main.dvi (9 pages, 44124 bytes).
