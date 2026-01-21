@@ -12,6 +12,7 @@
 \usepackage{url}
 \usepackage{underscore}
 \usepackage{colortbl}
+\usepackage{subfigure}
 \usepackage{tabularx}
 \usepackage{fancyhdr}
 \usepackage{ulem}
@@ -44,7 +45,7 @@
 
 \begin{document}
 
-\title{Hofstadterの蝶}
+\title{C++による数値計算}
 \author{志村昂輝}
 \maketitle
 
@@ -106,6 +107,9 @@ BLASはベクトルおよび行列に対する基本的な演算を提供する�
 \section{C++による対角化}
 本節では、C++からLAPACKを呼び出してエルミート行列を対角化するための手順をまとめます。複素行列を扱うか実対称行列を扱うかで用いるLAPACKのルーチンが異なる点にも注意すべきですが、呼び出し自体は数行で済みます。
 対角化には、エルミート行列を対角化するzheevか、dsyevを用います。LAPACKはもともとFortranで用いられていたライブラリであるため、column-majorでメモリの連続領域に格納されています。そこでC++ではs\texttt{td::vector<std::complex<double>>}を用いることで、要素$H_{ij}$に$H[i + N*j]$としてアクセスすることにします。
+
+サンプルプログラムは\textbf{chapter2-1.cpp}です。
+
 \subsection{zheevの引数}
 zheevの引数はこちらが考えて指定するものはそれほど多くなく、慣れれば簡単に実装できるようになりますが、一応各引数の説明をします。
 \begin{itemize}
@@ -122,8 +126,19 @@ zheevの引数はこちらが考えて指定するものはそれほど多くな
 \end{itemize}
 zheevは入力で与えた行列を上書きするので、元のハミルトニアンを別に使いたい場合は、対角化前に行列をコピーして保持しておくべきです。
 
+\subsection{コンパイルおよび実行}
+LAPACKは単体では動かず、内部でBLASも呼び出しています。したがって、C++でLAPACKを使う場合、リンク時にLAPACKとBLASを同時にリンクする必要があります。コンパイルは
+\begin{lstlisting}
+  g++ chapter2-1.cpp -O2 -llapack -lblas -o main
+\end{lstlisting}
+のように行います。無事コンパイルが終わると実行ファイル\texttt{main}が生成されるので、
+\begin{lstlisting}
+  ./main
+\end{lstlisting}
+で実行できます。
+
 \subsection{対角化の手順}
-ここでは
+chapter2-1.cppは、$3\times3$のエルミート行列
 \begin{equation}
   H =
 \begin{pmatrix}
@@ -132,25 +147,63 @@ zheevは入力で与えた行列を上書きするので、元のハミルトニ
 0 & 0.3 & 3.0
 \end{pmatrix}
 \end{equation}
-を対角化するコードを書いてみましょう。この行列の固有値は
+を対角化し、行列の固有値と固有ベクトルを出力するコードです。また対角化が出来ているかどうかの検証も行っています。
+
+LAPACKの関数をC++から呼ぶために、\texttt{extern "C"}という宣言を行っています。もともと\texttt{dsyev}と\texttt{zheev}はFortranで実装されている関数で、C++から呼び出すのために必要な宣言となっています。\footnote[1]{C++ではname manglingといい、関数の名前を定めるときに、引数の型や返却値の型など複数の意味を含めて修飾する手法があります。C++で参照する名前とFortranで参照する名前が違う場合に、\texttt{extern "C"}とすることでC言語と互換な名前解決を試みることが出来ます。}
+
+またここでは行列を表現する配列を実装する際に\texttt{template <class T>}を使うことで、\texttt{T}を型パラメータとして、Tがdouble型であっても、複素型であっても同じ行列として認識できるようにしています。
+
+
+では実際にプログラムを実行してみましょう。この行列の固有値は
 \begin{equation*}
   \lambda_1 \approx 0.95028847,\qquad
 \lambda_2 \approx 1.96487426,\qquad
 \lambda_3 \approx 3.08483726 .
 \end{equation*}
-となっていて、解析的にはきれいに求まりません。手できれいに答えが分かるような場合はチェックが簡単ですが、実地の研究では圧倒的に手で解けない場合の方が多いので、このようなケースを扱います。
-
-きちんと対角化できているかをチェックするには、エルミート行列の固有値及び固有ベクトルの性質に問題がないかを確かめる必要があります。以下のような性質があります。
+となっていて、解析的にはきれいに求まりません。きちんと対角化できているかをチェックするには、エルミート行列の固有値及び固有ベクトルの性質に問題がないかを確かめる必要がありますが、ここではエルミート行列の以下のような性質を用いて検証します。
 \begin{itemize}
   \item 固有値は実数である
   \item 固有ベクトルは正規直交系をなす
 \end{itemize}
 
-固有ベクトルが正規直交基底をなすということは、固有ベクトルを並べた行列$V$が$V^{\dagger}V = \mathcal{I}$を満たすということですから、これを計算することによって対角化が正しくできているかを確認できるといえるでしょう。
+上の2つの性質から、固有ベクトルを並べた行列$V$が$V^{\dagger}V = \mathcal{I}$を満たすことがわかります。
+
+chapter2-1.cppを実行すると、出力結果は以下のようになります。
+\begin{lstlisting}
+Eigenvalues (ascending):
+  w[0] = 0.950288
+  w[1] = 1.96487
+  w[2] = 3.08484
+
+Eigenvectors (columns):
+v[0] = ( (-0.872671,-0.436335) (0.216909,0) (-0.0317472,0) )
+v[1] = ( (-0.194332,-0.0971661) (-0.937531,0) (0.271715,0) )
+v[2] = ( (0.0260935,0.0130468) (0.272004,0) (0.961854,0) )
+
+Max residual norm2: 4.44957e-16
+\end{lstlisting}
+要素数3の1次元配列$w$に固有値が昇順に格納されています。また規格化された固有ベクトルが1次元配列vに格納されています。Max residual norm2は、各固有値$\lambda_i$と対応する固有ベクトル$\mathbf{v}_i$について$r_i = |\hat{H}\mathbf{v} - \lambda_i \mathbf{v}_i|^2$を計算し、その最大値として与えています。最大値が$10^{-16}$程度なので、数値誤差の程度で一致しており、対角化の結果が正しいことが保証されています。
 
 \section{C++によるFFTW3を用いたフーリエ変換}
-次にFFTWを用いたフーリエ変換の解説に移ります。使用には\texttt{<fftw3.h>}をインクルードする必要があります。コンパイル時にもリンクを指定する必要があり、\texttt{-lfftw3
-}とします。
+次にFFTWを用いたフーリエ変換の解説に移ります。FFTWは高速フーリエ変換を行うためのライブラリです。大まかにはまず\texttt{fftw_plan_*}のように用意されている関数でplanを作成し、\texttt{fftw_execute(plan)}でplanを実行する、という流れになります。フーリエ変換後にplanとメモリを開放することを忘れないようにしてください。
+
+ところでFFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は
+\begin{lstlisting}
+  typedef double fftw_complex[2];
+\end{lstlisting}
+のように定められています。\texttt{[0]}には実部が、\texttt{[1]}には虚部が対応しています。FFTWで扱う引数は、\texttt{std::complex<double>}を受け付けないので、FFTの際は複素数型に必ずfftw_complexを指定しましょう。
+
+次に、FFTWで要となる\texttt{fftw_plan}型についてです。この型の中身はユーザーからは見えないのですが、入力値や次元数、最適化の仕方やアルゴリズムなどが内部に保持されています。我々の行うことは、フーリエ変換のためのplanを作成し、それを\texttt{fftw_plan}で実行することです。
+
+FFTWは扱うデータ型に応じて関数名が分かれています。
+\begin{itemize}
+  \item fftw_complex 型から fftw_complex 型への変換: 複素関数から複素関数の変換に対応し、\texttt{fftw_plan_dft_*}と名前が付いた関数を使う。\footnote[1]{筆者はこれしか使ったことがありません。}
+  \item double 型から double 型 への変換 : 実関数から実関数への変換に対応し、\texttt{fftw_plan_dft_r2c_*}と名前がついた関数を用いる。
+  \item double 型から fftw_complex 型への変換 : 実関数から複素関数への変換に対応し、\texttt{fftw_plan_dft_c2r_*}と名前の付いた関数を用いる。
+  \item fftw_complex 型から double 型への変換 : 複素関数から実関数への変換に対応し、\texttt{fftw_plan_dft_r2r_*}と名前の付いた関数を用いる。
+\end{itemize}
+他にも、関数名の先頭を\texttt{fftwf_}としてfloat型を扱う関数や、関数名の先頭を\texttt{fftwl_}としてlong double型を扱う関数が存在します。
+
 
 \subsection{fftw_plan fftw_plan_dft_2dの引数}
 \begin{itemize}
@@ -173,11 +226,92 @@ zheevは入力で与えた行列を上書きするので、元のハミルトニ
 \end{equation}
 をFFTWで数値計算して波数空間上にプロットします。なお上のようなローレンチアンのフーリエ変換は厳密解が知られていて
 \begin{equation}
-  F(k_x,k_y) = e^{-\delta |k|}
+  F(k_x,k_y) = 2\pi\delta^2 K_0(\delta |k|)
 \end{equation}
-です。
+となります。ここで$K_0(x)$は第2種変形ベッセル関数です。
+
+\begin{figure}[t]
+  \centering
+  \subfigure[(a) Real space]{
+    \includegraphics[width=0.45\linewidth]{lorentzianreal.eps}
+  }
+  \hfill
+  \subfigure[(b) k space]{
+    \includegraphics[width=0.45\linewidth]{lorentziankmag.eps}
+  }
+  \caption{Real-space Lorentzian and its Fourier transform.}
+    \hfill
+  \subfigure[(c) compare exact]{
+    \includegraphics[width=0.45\linewidth]{lorentzian-kx-slice-ky0.eps}
+  }
+  \caption{Real-space Lorentzian and its Fourier transform.}
+  \label{fig:lorentzian-fft}
+\end{figure}
+
+図\ref{fig:lorentzian-fft}(a)にはフーリエ変換前の実空間のローレンチアンのカラーマップ、(b)にはフーリエ変換後のローレンチアンのカラーマップを示しています。
 
 \section{C++によるOpenMPを用いた並列計算}
+OpenMPはメモリ共有によって並列計算を行うためのAPIで、C++やFortranのコードに対して並列化を行うことができます。1つのプロセスの内部で複数のスレッドを生成し、それらが同一のメモリを共有しながら計算を行います。したがって、配列やグローバル変数をそのまま共有して用いることが出来ます。まずparallel regionを作り、その中でタスクをスレッドに分配し、各スレッドが同時に計算を実行する、というのがOpenMPによる並列化のおおまかな流れです。
+
+\subsection{いかなるときに並列化が有効か}
+並列化は、ループの反復が互いに独立であるときに適しています。最も頻繁に使われるのは多重積分でしょう。また、パラメータの掃引においても並列化は威力を発揮します。独立であるかを判断する目安として、並列化させる計算の順序を入れ替えても良いかどうかを検討するとよいです。
+
+もちろんすべてのプログラムが並列化可能なわけではありません。例えば、各for文の計算が非常に軽い場合はむしろ並列化のためのオーバーヘッドのほうが負荷になります。また各ループの計算が独立でない場合は意図しない結果をもたらしたり、そもそも並列化不可能であったりします。例えば漸化式のように、i番目の計算を出力するのにi-1番目の結果が必要になる場合は並列化を適用できません。
+
+\subsection{基本的な使い方}
+OpenMPはコンパイラが対応している必要がありますが、本稿で主に用いるg++ではデフォルトで使うことが出来ます。使用時はコンパイルオプションに-fopenmpを付ければよく、例えばコンパイル時に
+\begin{lstlisting}
+  g++ -O2 -fopenmp main.cpp -o main
+\end{lstlisting}
+とします。
+
+対角化やフーリエ変換と比べると、メモリや操作順序を意識しなければならないという点で並列化には別の困難がありますが、実装自体は大変簡単で、以下の3つの指示を覚えれば基本的には事足ります。
+\begin{itemize}
+  \item \texttt{parallel / parallel for} : parallelは並列領域を作成する指示。ほとんどfor文と組み合わせて使うのでparallel forと書くことが多い。
+  \item \texttt{shared / private} : 変数を各スレッドごとにコピーするか、全てのスレッドで共有されるものかを区別するのに使う指示。
+  \item \texttt{reduction} : 複数のスレッドが計算した結果を1つにまとめるために使う。例えば、総和や内積など。
+\end{itemize}
+
+スレッド数は実行時に環境変数を指定すれば変更することが出来ます。例えば実行前に
+\begin{lstlisting}
+export OMP_NUM_THREADS=4
+\end{lstlisting}
+とすれば、OpenMPは4スレッドで実行されます。
+
+\subsection{\texttt{parallel / parallel for}}
+chapter2-3-1.cppをコンパイルし実行してみましょう。正しい挙動を示せば出力は以下のようになるはずです。
+
+\begin{lstlisting}
+thread 9 / 16
+thread 10 / 16
+thread 2 / 16
+...
+\end{lstlisting}
+
+まず\texttt{\#pragma omp parallel}でparallel regionを作成すると、OpenMPがスレッドを複数作成します。この場合は16本作成されています。\texttt{omp_get_thread_num()}がスレッド番号を、\texttt{omp_get_num_threads()}がparallel regionの中のスレッド数を指しています。つまり\texttt{thread i / 16}は16本あるスレッドのうちi番目のスレッドが標準出力を実行したことになります。
+
+chapter2-3-2.cppをコンパイルし実行すると、出力は以下のようになります。
+\begin{lstlisting}
+i = 6, thread = 6
+i = 0, thread = 0
+i = 7, thread = 7
+...
+\end{lstlisting}
+このように各スレッドでバラバラに計算が行われます。
+
+\subsection{OpenMPにおける変数の扱い(\texttt{shared/private})}
+OpenMPでは、parallel regionに入ったときに各変数が全てのスレッドで共有されているのか、あるいはスレッドごとに独立に定められるのかを意識する必要があります。例えばすべてのスレッドで統一したかった変数が各スレッドで書き換えられてしまい、実行ごとに値が変わってしまうトラブルが起こり得ますが、こうした問題を防ぐために変数がsharedかprivateかを定めておく必要があります。shared変数は全スレッドが同じメモリ領域を参照するので、1つの変数を全員で共有していると考えることが出来ます。一方でprivateな変数は、各スレッドが専用にコピーを保持し、他のスレッドが参照するのを防ぎます。
+
+簡単な例でその違いを実感してみましょう。chapter2-3-3.cppは、xに1を加算していく操作を並列して行うもので、直観的にはスレッド数が出力されるはずです。しかし結果は実行ごとに異なる値を吐き出します。並列計算では変数をデフォルトでsharedとしており、計算の競合が発生するためです。\footnote[1]{実行結果が毎回異なるのは少々発展的な話題であるので脚注にまとめます(しかし大事です！)。まずxに1を足すという操作(\texttt{x += 1})は、CPUの中で複数の手順を通じて行われます。「メモリからxを読み込み、レジスタ上でインクリメントし、結果をメモリに書き戻す」というのが\texttt{x += 1}で行われていることです。今、スレッド1とスレッド2が同時に\texttt{x += 1}を実行すると、先にスレッド1がメモリから$x = 0$を読み込んだとしても、インクリメントする前にスレッド2がメモリから$x = 0$を読み込んでしまいます(本文で「競合」と呼んだ内容)。すると、スレッド1が$x = 1$をメモリに書き戻した後に再びスレッド2が$x = 1$をメモリに書き込んでしまいます。これにより、スレッド1つ分の操作が消えてしまうことになります。つまり運よく$x$がスレッド数と等しくなることはあるでしょうが、実行のタイムスケジュールは毎回異なるので、多くの場合は$x$は実際のスレッド数より少ない値を吐き出すことになるのです。}
+
+chapter2-3-4.cppではxをprivate変数として保持しています。各スレッドで\texttt{x += 1}し、全てのスレッドで$x = 1$となっていることがお分かりになると思います。
+
+\subsection{reduction}
+OpenMPにおけるshared変数の扱いを見ると、並列計算には慎重な取り扱いが必要であることが分かります。例えばfor文を使って配列aと配列bの内積をとる操作においても、脚注で示したような競合が発生し、正しく総和が取られない可能性があります。そこで導入されるのが\texttt{reduction}です。
+
+reductionは各スレッドにprivateな変数を用意して、その変数を更新します。並列領域がクローズした後に、各スレッドで更新済みの変数を合計します。これにより競合をさけ、予期しない挙動を防ぎます。
+
+reductionの基本的な構文は\texttt{\#pragma omp parallel for reduction(operator : variable)}で与えられます。例えば、変数Xに何かの総和を記録するときは、\texttt{\#pragma omp parallel for reduction(+ : X)}とします。
 
 \begin{thebibliography}{9}
   \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).

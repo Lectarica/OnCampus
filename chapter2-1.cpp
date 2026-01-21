@@ -8,12 +8,8 @@
 
 using cd = std::complex<double>;
 
-// -----------------------------
-// LAPACK Fortran symbols
-// -----------------------------
 extern "C" {
 
-// Real symmetric eigen (divide and conquer)
 void dsyevd_(
     char* jobz, char* uplo,
     int* n,
@@ -24,7 +20,6 @@ void dsyevd_(
     int* info
 );
 
-// Complex Hermitian eigen (divide and conquer)
 void zheevd_(
     char* jobz, char* uplo,
     int* n,
@@ -36,12 +31,8 @@ void zheevd_(
     int* info
 );
 
-} // extern "C"
+}
 
-// -----------------------------
-// Column-major indexing helper
-// A(i,j) is stored at a[i + n*j]
-// -----------------------------
 template <class T>
 inline T& A(std::vector<T>& a, int i, int j, int n) {
     return a[i + n * j];
@@ -51,9 +42,6 @@ inline const T& A(const std::vector<T>& a, int i, int j, int n) {
     return a[i + n * j];
 }
 
-// -----------------------------
-// Simple norms for checks
-// -----------------------------
 double norm2(const std::vector<double>& x) {
     long double s = 0.0L;
     for (double v : x) s += (long double)v * (long double)v;
@@ -65,8 +53,6 @@ double norm2(const std::vector<cd>& x) {
     return std::sqrt((double)s);
 }
 
-// r_j = || A_orig v_j - lambda_j v_j ||_2
-// Here eigenvectors are stored as columns in V (= overwritten A after LAPACK).
 template <class T>
 double residual_norm2(const std::vector<T>& Aorig,
                       const std::vector<T>& V,
@@ -83,10 +69,6 @@ double residual_norm2(const std::vector<T>& Aorig,
     return norm2(r);
 }
 
-// -----------------------------
-// Diagonalize: complex Hermitian (zheevd)
-// On exit: A overwritten by eigenvectors (columns)
-// -----------------------------
 void diagonalize_hermitian(std::vector<cd>& a, int n, std::vector<double>& w) {
     w.assign(n, 0.0);
 
@@ -135,10 +117,6 @@ void diagonalize_hermitian(std::vector<cd>& a, int n, std::vector<double>& w) {
     }
 }
 
-// -----------------------------
-// Example: build a small Hermitian matrix (n=3)
-// Replace this block with your Hamiltonian builder.
-// -----------------------------
 std::vector<cd> build_example_hermitian_3x3(int& n_out) {
     const int n = 3;
     n_out = n;
@@ -163,27 +141,21 @@ std::vector<cd> build_example_hermitian_3x3(int& n_out) {
     return H;
 }
 
-// -----------------------------
-// Main
-// -----------------------------
 int main() {
     try {
         int n = 0;
         std::vector<cd> H = build_example_hermitian_3x3(n);
 
-        // Backup for residual checks (since H will be overwritten)
         std::vector<cd> Horig = H;
 
         std::vector<double> w;
         diagonalize_hermitian(H, n, w);
 
-        // Print eigenvalues
         std::cout << "Eigenvalues (ascending):\n";
         for (int i = 0; i < n; ++i) {
             std::cout << "  w[" << i << "] = " << w[i] << "\n";
         }
 
-        // H now stores eigenvectors column-wise
         std::cout << "\nEigenvectors (columns):\n";
         for (int j = 0; j < n; ++j) {
             std::cout << "v[" << j << "] = ( ";
@@ -193,7 +165,6 @@ int main() {
             std::cout << ")\n";
         }
 
-        // Residual check: max_j ||Horig v_j - w_j v_j||
         double max_res = 0.0;
         for (int j = 0; j < n; ++j) {
             double rj = residual_norm2(Horig, H, w, n, j);
@@ -201,7 +172,6 @@ int main() {
         }
         std::cout << "\nMax residual norm2: " << max_res << "\n";
 
-        // Save eigenvalues
         {
             std::ofstream ofs("eigvals.dat");
             ofs << "# i  w[i]\n";
@@ -210,7 +180,6 @@ int main() {
             }
         }
 
-        // Save eigenvectors (optional: large nなら保存しない/間引く)
         {
             std::ofstream ofs("eigvecs.dat");
             ofs << "# columns are eigenvectors v_j; row i is component i\n";
