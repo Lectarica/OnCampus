@@ -61,6 +61,8 @@
 
 第3章ではグリーン関数の実装方法について述べます。グリーン関数の虚部から得られる状態密度の描画方法もここで述べます。
 
+最後に、本書はあくまでも研究室内ドキュメントであり必要に応じて参照すればよいと思いますが、内容をしっかり理解したい方は掲載されているプログラムを自分の手で実装してみるとよいと思います。最初はコードの写経でもよいですが、書き換えや順序の入れ替えで挙動がどうなるかをチェックするとより理解が深まるかと思います。
+
 \chapter{プログラミング言語の選択と環境構築}
 \section{数値計算向きの言語(C++, Fortran)}
 数値計算という目的に絞ってもプログラミング言語の選択肢は多岐にわたりますが、物性物理で格子模型や多体問題を扱う場合、計算量は系の大きさや自由度の増加とともに急激に増大します。したがって、実行速度やメモリ配置を意識する必要があり、C++やFortranはそれにふさわしい選択肢の一つとして挙げられます。明示的に型が指定されるために、数値誤差のふるまいを把握しやすくなるのも重要です。
@@ -85,7 +87,7 @@ Fortranにはポインタなどの概念が存在せず、比較的コーディ�
 }
 型指定もないので、簡単な計算を行いたいだけならC++やFortranよりも圧倒的に便利です。特に配列(リスト)の定義が楽で、線形代数関連のライブラリが充実しており簡単に計算できるのは大きな魅力です。コードの読解も比較的やさしく、精神的な負担が少ないです。
 
-Python3はスクリプト言語であり、実行速度やメモリ制御の面ではコンパイル型言語に劣るために、大規模数値計算の中核を担うのには不適切である場合もあります\footnote[2]{厳密には計算効率を上げるための工夫が様々に存在するようですが、その工夫に割くコストを考えると最初からC++やFortranで実装した方がよいという意見が専門家の間では散見されます。}。また型宣言がないのは実装や保守性の観点から苦しみの種となる場合もあります。しかしながら、C++やFortranで実行した本計算の出力をPythonで読み込み、プロットや解析を行うといった使い方は広く行われており、その自由度はほかの言語の追随を許しません。
+Python3はインタプリタ言語であり、実行速度やメモリ制御の面ではコンパイル型言語に劣るために、大規模数値計算の中核を担うのには不適切である場合もあります\footnote[2]{厳密には計算効率を上げるための工夫が様々に存在するようですが、その工夫に割くコストを考えると最初からC++やFortranで実装した方がよいという意見が専門家の間では散見されます。}。また型宣言がないのは実装や保守性の観点から苦しみの種となる場合もあります。しかしながら、C++やFortranで実行した本計算の出力をPythonで読み込み、プロットや解析を行うといった使い方は広く行われており、その自由度はほかの言語の追随を許しません。
 
 \subsection{近年注目されている言語(Julia)}
 筆者は常用しておらず、軽く触れる程度しかできませんが、近年数値計算を目的としたプログラミング言語として注目されているものの一つにJuliaがあります。素早く実装することができ、かつ可読性が高い部分はPythonに似ていますが、型安定なコードならCやFortranに劣らない速度で計算できるため、両者のいいとこどりをしています。現時点でのデメリットといえば、比較的新しい言語であるためにライブラリやパッケージの進化が早くバージョン管理が大変であろうことだと考えられますが、最近は研究会なども開かれており今後利用者は増えていくと見込まれます。
@@ -185,9 +187,10 @@ Max residual norm2: 4.44957e-16
 要素数3の1次元配列$w$に固有値が昇順に格納されています。また規格化された固有ベクトルが1次元配列vに格納されています。Max residual norm2は、各固有値$\lambda_i$と対応する固有ベクトル$\mathbf{v}_i$について$r_i = |\hat{H}\mathbf{v} - \lambda_i \mathbf{v}_i|^2$を計算し、その最大値として与えています。最大値が$10^{-16}$程度なので、数値誤差の程度で一致しており、対角化の結果が正しいことが保証されています。
 
 \section{C++によるFFTW3を用いたフーリエ変換}
-次にFFTWを用いたフーリエ変換の解説に移ります。FFTWは高速フーリエ変換を行うためのライブラリです。大まかにはまず\texttt{fftw_plan_*}のように用意されている関数でplanを作成し、\texttt{fftw_execute(plan)}でplanを実行する、という流れになります。フーリエ変換後にplanとメモリを開放することを忘れないようにしてください。
+次にFFTWを用いたフーリエ変換の解説に移ります。FFTWは高速フーリエ変換を行うためのライブラリです。大まか流れとしては、まずフーリエ変換したい配列を用意した後、\texttt{fftw_plan_*}のように用意されている関数でplanを作成し、\texttt{fftw_execute(plan)}でplan(フーリエ変換)を実行、その後planを破壊してメモリを開放する、という流れになります。フーリエ変換後にplanとメモリを開放することを忘れないようにしてください。
 
-ところでFFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は
+\subsection{FFTWにおける型}
+FFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は
 \begin{lstlisting}
   typedef double fftw_complex[2];
 \end{lstlisting}
@@ -195,7 +198,26 @@ Max residual norm2: 4.44957e-16
 
 次に、FFTWで要となる\texttt{fftw_plan}型についてです。この型の中身はユーザーからは見えないのですが、入力値や次元数、最適化の仕方やアルゴリズムなどが内部に保持されています。我々の行うことは、フーリエ変換のためのplanを作成し、それを\texttt{fftw_plan}で実行することです。
 
-FFTWは扱うデータ型に応じて関数名が分かれています。
+\subsection{planとは何か}
+FFTWでFFTを実行する場合は、\texttt{fftw_plan}型を持つ変数planを用意します。例えば2次元DFTを複素関数から複素関数に対して与える場合は
+\begin{lstlisting}
+fftw_plan plan = fftw_plan_dft_2d(...);
+fftw_execute(plan);  
+\end{lstlisting}
+のように実行します。ここでplanは次の情報を内部で保持しています。
+\begin{itemize}
+  \item 変換の次元 : 1次元、2次元、3次元、あるいは4次元以上
+  \item 各次元のメッシュサイズ : 離散的な値を教える必要があるので、関数の刻み方をこちらから指定する
+  \item 実数か複素数か
+  \item 入力・出力の配列
+  \item 使用するFFTアルゴリズム : 順変換か逆変換か？
+\end{itemize}
+なおplanを作成し終わった後にユーザーが中身を参照することはできません。
+
+\subsection{plan実行のための関数}
+FFTWでplanを作成する関数は何次元で、どういった変換を行うかが分かるようになっています。
+
+FFTWは扱うデータ型に応じて関数名が分かれており、以下のように分類されます。
 \begin{itemize}
   \item fftw_complex 型から fftw_complex 型への変換: 複素関数から複素関数の変換に対応し、\texttt{fftw_plan_dft_*}と名前が付いた関数を使う。\footnote[1]{筆者はこれしか使ったことがありません。}
   \item double 型から double 型 への変換 : 実関数から実関数への変換に対応し、\texttt{fftw_plan_dft_r2c_*}と名前がついた関数を用いる。
@@ -204,8 +226,26 @@ FFTWは扱うデータ型に応じて関数名が分かれています。
 \end{itemize}
 他にも、関数名の先頭を\texttt{fftwf_}としてfloat型を扱う関数や、関数名の先頭を\texttt{fftwl_}としてlong double型を扱う関数が存在します。
 
+また、FFTWで用意されている関数は何次元の変換かを指定することが出来ます。具体的には、1次元、2次元、3次元、そして任意次元の関数です。
+
+\begin{itemize}
+  \item \texttt{fftw_plan_dft_1d} : 1次元フーリエ変換。
+  \item \texttt{fftw_plan_dft_2d} : 2次元フーリエ変換。
+  \item \texttt{fftw_plan_dft_3d} : 3次元フーリエ変換。
+  \item \texttt{fftw_plan_dft} : 任意次元のフーリエ変換。引数の中で次元を指定する必要がある。
+\end{itemize}
+
+FFTWの関数名は、どの型からどの型への変換か、また何次元の変換かを組み合わせて指定されます。例えば、実数から実数の変換で3次元フーリエ変換を行いたい場合は\texttt{fftw_plan_r2r_3d}と書きます。
 
 \subsection{fftw_plan fftw_plan_dft_2dの引数}
+試みに2次元フーリエ変換を行う関数がどのような構成になっているか見てみましょう。以下は\texttt{fftw_plan plan = fftw_plan_dft_2d(
+    Nx, Ny,
+    in, out,
+    FFTW_FORWARD,
+    FFTW_MEASURE
+);}
+の引数の解説です。
+
 \begin{itemize}
   \item \texttt{n0} : int型。第1次元の格子点の数。
   \item \texttt{n1} : int型。第2次元の格子点の数。
@@ -216,19 +256,39 @@ FFTWは扱うデータ型に応じて関数名が分かれています。
 \end{itemize}
 
 \subsection{フーリエ変換の手順}
-ここでは、実空間表示の関数を波数空間の関数にフーリエ変換する関数を作ってみましょう。実空間表示の関数として、ここでは2次元格子上ローレンチアン
+chapter2-2.cppにFFTWを用いて実空間表示の関数を波数空間の関数にフーリエ変換するプログラムを示します。実空間表示の関数として、ここでは2次元格子上ローレンチアン
 \begin{equation}
   f(x,y) = \frac{\delta^2}{x^2+y^2+\delta^2}
 \end{equation}
-を採用します。2次元フーリエ変換
+を採用します。ここで$\gamma > 0$はローレンチアンの幅に対応するパラメータで、値を大きくすると実空間で緩やかに減衰します。また、数値計算では、無限平面 $\mathbb{R}^2$ を直接扱うことはできないため、$x,y$ を有限サイズの正方格子
 \begin{equation}
-  F(k_x,k_y) = \sum_{x,y} e^{-i(k_x x+ k_y y)} f(x,y)
+  x = -\frac{N_x}{2},\ldots,\frac{N_x}{2}-1,\quad
+  y = -\frac{N_y}{2},\ldots,\frac{N_y}{2}-1
 \end{equation}
-をFFTWで数値計算して波数空間上にプロットします。なお上のようなローレンチアンのフーリエ変換は厳密解が知られていて
+上で定義します。ここでメッシュサイズを$N_x = N_y = 128$とします。
+
+2次元フーリエ変換
+\begin{equation}
+  F_{m_x,m_y}
+  =
+  \sum_{x=0}^{N_x-1}\sum_{y=0}^{N_y-1}
+  f_{x,y}\,
+  e^{-2\pi i\left(\frac{m_x x}{N_x}+\frac{m_y y}{N_y}\right)}
+\end{equation}
+を数値計算して波数空間上にプロットします。波数との対応は
+\begin{equation}
+  k_x = \frac{2\pi}{N_x}\,m_x,\quad
+  k_y = \frac{2\pi}{N_y}\,m_y
+\end{equation}
+で与えられます。
+
+
+ローレンチアンのフーリエ変換は厳密解が知られていて
 \begin{equation}
   F(k_x,k_y) = 2\pi\delta^2 K_0(\delta |k|)
 \end{equation}
-となります。ここで$K_0(x)$は第2種変形ベッセル関数です。
+となります。ここで$K_0(x)$は第2種変形ベッセル関数です。ところで$|\mathbf{k}|\to 0$ の極限では$K_0(z) \sim -\ln z$
+のように対数発散するため、$k=0$ 成分は数値計算で直接比較できません。そこで本研究では波数空間上の $k=0$ となる点を除外し、$|\mathbf{k}|>0$ の領域において数値結果との比較を行います。
 
 \begin{figure}[t]
   \centering
@@ -248,7 +308,7 @@ FFTWは扱うデータ型に応じて関数名が分かれています。
   \label{fig:lorentzian-fft}
 \end{figure}
 
-図\ref{fig:lorentzian-fft}(a)にはフーリエ変換前の実空間のローレンチアンのカラーマップ、(b)にはフーリエ変換後のローレンチアンのカラーマップを示しています。
+図\ref{fig:lorentzian-fft}(a)にはフーリエ変換前の実空間のローレンチアンのカラーマップ、(b)にはフーリエ変換後のローレンチアンのカラーマップを示しています。また図(c)では、$k_y = 0$でスライスしたフーリエ変換の実部と厳密解とを比較しています。数値計算結果と厳密解がいい結果を示していることが分かります。
 
 \section{C++によるOpenMPを用いた並列計算}
 OpenMPはメモリ共有によって並列計算を行うためのAPIで、C++やFortranのコードに対して並列化を行うことができます。1つのプロセスの内部で複数のスレッドを生成し、それらが同一のメモリを共有しながら計算を行います。したがって、配列やグローバル変数をそのまま共有して用いることが出来ます。まずparallel regionを作り、その中でタスクをスレッドに分配し、各スレッドが同時に計算を実行する、というのがOpenMPによる並列化のおおまかな流れです。
@@ -312,6 +372,136 @@ OpenMPにおけるshared変数の扱いを見ると、並列計算には慎重�
 reductionは各スレッドにprivateな変数を用意して、その変数を更新します。並列領域がクローズした後に、各スレッドで更新済みの変数を合計します。これにより競合をさけ、予期しない挙動を防ぎます。
 
 reductionの基本的な構文は\texttt{\#pragma omp parallel for reduction(operator : variable)}で与えられます。例えば、変数Xに何かの総和を記録するときは、\texttt{\#pragma omp parallel for reduction(+ : X)}とします。
+
+\chapter{強束縛模型の解析}
+\section{次近接ホッピングを導入した2次元正方格子の強束縛模型の構築}
+まず2次元正方格子上のシングルバンドの強束縛模型を実空間で構成し、その後フーリエ変換でによって波数空間表示を導きます。格子定数は1とします。格子点は$\bm{R}_i = (x_i, y_i)$で表され、 $i$ 番目の格子に対しフェルミオンの生成・消滅演算子$c_i^\dagger, c_i$ を導入します。スピン添え字は省略します。
+
+正方格子における最近接ベクトルは
+\begin{equation}
+\bm{\delta} \in \{(\pm1,0),(0,\pm1)\}
+\end{equation}
+であり、次近接ベクトルは
+\begin{equation}
+\bm{\delta}' \in \{(\pm1,\pm1)\}
+\end{equation}
+となります。最近接ホッピング $t$ と次近接ホッピング $t'$ を含めた実空間のハミルトニアンは
+\begin{equation}
+H
+=
+- t \sum_i \sum_{\bm{\delta}}
+c_i^\dagger c_{i+\bm{\delta}}
+- t' \sum_i \sum_{\bm{\delta}'}
+c_i^\dagger c_{i+\bm{\delta}'}
+- \mu \sum_i c_i^\dagger c_i
+\end{equation}
+と書けます。ここで実空間と波数空間の演算子の関係を
+\begin{align}
+c_i
+&=
+\frac{1}{\sqrt{N}}
+\sum_{\bm{k}}
+e^{i\bm{k}\cdot\bm{R}_i}
+c_{\bm{k}}, \\
+c_i^\dagger
+&=
+\frac{1}{\sqrt{N}}
+\sum_{\bm{k}}
+e^{-i\bm{k}\cdot\bm{R}_i}
+c_{\bm{k}}^\dagger
+\end{align}
+と定義して、式(1)のハミルトニアンの第一項
+\begin{equation}
+- t \sum_i \sum_{\bm{\delta}}
+c_i^\dagger c_{i+\bm{\delta}}
+\end{equation}
+にフーリエ変換の表式を代入すると，
+\begin{align}
+c_i^\dagger c_{i+\bm{\delta}}
+&=
+\frac{1}{N}
+\sum_{\bm{k},\bm{k}'}
+e^{-i\bm{k}\cdot\bm{R}_i}
+e^{i\bm{k}'\cdot(\bm{R}_i+\bm{\delta})}
+c_{\bm{k}}^\dagger c_{\bm{k}'}
+\end{align}
+となります。第2項の次近接ホッピングに関する項も同様に計算することができます。
+
+ここで格子点 $i$ について和を取ると、Nを格子点の数として
+\begin{equation}
+\sum_i e^{i(\bm{k}'-\bm{k})\cdot\bm{R}_i}
+=
+N \delta_{\bm{k},\bm{k}'}
+\end{equation}
+であることを用いて
+\begin{equation}
+- t \sum_{\bm{k}}
+\left(
+\sum_{\bm{\delta}}
+e^{i\bm{k}\cdot\bm{\delta}}
+\right)
+c_{\bm{k}}^\dagger c_{\bm{k}}
+- t' \sum_{\bm{k}}
+\left(
+\sum_{\bm{\delta}'}
+e^{i\bm{k}\cdot\bm{\delta}'}
+\right)
+c_{\bm{k}}^\dagger c_{\bm{k}}
+\end{equation}
+を得ます。特に正方格子では
+\begin{equation}
+\sum_{\bm{\delta}}
+e^{i\bm{k}\cdot\bm{\delta}}
+= e^{ik} + e^{-ik}
+= 2\cos k_x + 2\cos k_y
+\end{equation}
+となります。また次近接を考慮した項について和を取ると
+\begin{align}
+\sum_{\bm{\delta}'}
+e^{i\bm{k}\cdot\bm{\delta}'}
+&=
+e^{i(k_x+k_y)}
++ e^{i(k_x-k_y)}
++ e^{-i(k_x-k_y)}
++ e^{-i(k_x+k_y)} \\
+&= 2\cos (k_x+k_y) + 2\cos (k_x-k_y) \\
+&=
+4 \cos k_x \cos k_y
+\end{align}
+となります。
+
+以上をまとめると、次近接まで考慮した波数表示での2次元正方格子ハミルトニアンは
+\begin{equation}
+H
+=
+\sum_{\bm{k}}
+\varepsilon(\bm{k})
+c_{\bm{k}}^\dagger c_{\bm{k}}
+\end{equation}
+であり、分散関係は
+\begin{equation}
+\varepsilon(\bm{k})
+=
+-2t(\cos k_x + \cos k_y)
+-4t' \cos k_x \cos k_y
+- \mu
+\end{equation}
+で与えられます。
+
+並進対称性を仮定した場合、波数表示で既にハミルトニアンは対角的になっているので、対角化をする必要はありません。
+
+\section{バンド図とフェルミ面}
+
+次に、前章で導出した2次元正方格子のエネルギー分散$\epsilon(\bm{k})$を用いて、High symmetry pathに沿ったバンド図及びフェルミ面を数値計算によって実際に書いてみましょう。ここではパラメータを$t = 1.0$, $t' = -0.2$に固定し、バンド構造を観察してみます。また化学ポテンシャル$\mu$を変えることでフェルミ面がどのように変化するかも観察してみましょう。
+
+\subsection{バンド図の描画}
+2次元正方格子の1st ブリルアンゾーンにおける代表的な高対称点は
+$\Gamma = (0,0)$, $X = (\pi,0)$, $M = (0, \pi)$です。例えば縦軸にエネルギーをとり、平面上に波数空間を取る手法が自然に考えられますが3次元的な分散はかけても解析が難しいことのほうが多いので、高対称点を結ぶHigh symmetry pathに沿ってエネルギーをプロットしてバンド図とすることが多いです。
+
+\subsection{フェルミ面の描画}
+フェルミ面は$\varepsilon(k) = 0$を満たす波数$\bm{k}$の集合からなります。金属の性質はおおかたフェルミ面近傍の電子が決めており、その形状は物理量のふるまいや発現する超伝導状態などに寄与します。そのためフェルミ面は金属の顔とも呼ばれ、出発点としてまずはフェルミ面を計算することに心血が注がれます。
+
+フェルミ面を数値的に求める手順は、大まかには次の通りです。エネルギー分散は数値計算で離散的に求められますが、各点を線形補完し、$\varepsilon(\bm{k}_i)$と$\varepsilon(\bm{k}_{i+1})$とで符号が反転する箇所を取り出します。このようにして得られたフェルミ面はあくまで点の集合ですが、メッシュサイズを十分細かくすることによって視覚的には滑らかなフェルミ面として扱うことができます。
 
 \begin{thebibliography}{9}
   \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).

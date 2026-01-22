@@ -15,11 +15,19 @@
 \BOOKMARK [2][-]{subsection.2.2.2}{コンパイルおよび実行}{section.2.2}% 15
 \BOOKMARK [2][-]{subsection.2.2.3}{対角化の手順}{section.2.2}% 16
 \BOOKMARK [1][-]{section.2.3}{C++によるFFTW3を用いたフーリエ変換}{chapter.2}% 17
-\BOOKMARK [2][-]{subsection.2.3.1}{fftw\137plan fftw\137plan\137dft\1372dの引数}{section.2.3}% 18
-\BOOKMARK [2][-]{subsection.2.3.2}{フーリエ変換の手順}{section.2.3}% 19
-\BOOKMARK [1][-]{section.2.4}{C++によるOpenMPを用いた並列計算}{chapter.2}% 20
-\BOOKMARK [2][-]{subsection.2.4.1}{いかなるときに並列化が有効か}{section.2.4}% 21
-\BOOKMARK [2][-]{subsection.2.4.2}{基本的な使い方}{section.2.4}% 22
-\BOOKMARK [2][-]{subsection.2.4.3}{parallel / parallel for}{section.2.4}% 23
-\BOOKMARK [2][-]{subsection.2.4.4}{OpenMPにおける変数の扱い\(shared/private\)}{section.2.4}% 24
-\BOOKMARK [2][-]{subsection.2.4.5}{reduction}{section.2.4}% 25
+\BOOKMARK [2][-]{subsection.2.3.1}{FFTWにおける型}{section.2.3}% 18
+\BOOKMARK [2][-]{subsection.2.3.2}{planとは何か}{section.2.3}% 19
+\BOOKMARK [2][-]{subsection.2.3.3}{plan実行のための関数}{section.2.3}% 20
+\BOOKMARK [2][-]{subsection.2.3.4}{fftw\137plan fftw\137plan\137dft\1372dの引数}{section.2.3}% 21
+\BOOKMARK [2][-]{subsection.2.3.5}{フーリエ変換の手順}{section.2.3}% 22
+\BOOKMARK [1][-]{section.2.4}{C++によるOpenMPを用いた並列計算}{chapter.2}% 23
+\BOOKMARK [2][-]{subsection.2.4.1}{いかなるときに並列化が有効か}{section.2.4}% 24
+\BOOKMARK [2][-]{subsection.2.4.2}{基本的な使い方}{section.2.4}% 25
+\BOOKMARK [2][-]{subsection.2.4.3}{parallel / parallel for}{section.2.4}% 26
+\BOOKMARK [2][-]{subsection.2.4.4}{OpenMPにおける変数の扱い\(shared/private\)}{section.2.4}% 27
+\BOOKMARK [2][-]{subsection.2.4.5}{reduction}{section.2.4}% 28
+\BOOKMARK [0][-]{chapter.3}{強束縛模型の解析}{}% 29
+\BOOKMARK [1][-]{section.3.1}{次近接ホッピングを導入した2次元正方格子の強束縛模型の構築}{chapter.3}% 30
+\BOOKMARK [1][-]{section.3.2}{バンド図とフェルミ面}{chapter.3}% 31
+\BOOKMARK [2][-]{subsection.3.2.1}{バンド図の描画}{section.3.2}% 32
+\BOOKMARK [2][-]{subsection.3.2.2}{フェルミ面の描画}{section.3.2}% 33
