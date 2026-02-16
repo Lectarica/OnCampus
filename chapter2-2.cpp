@@ -38,32 +38,23 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // ------------------------------------------------------------
-    // 1) 実空間ローレンチアン f(x,y)=gamma^2/(x^2+y^2+gamma^2)
-    //
-    // 重要: fの中心 (x=0,y=0) を配列インデックス (0,0) に持ってくるように
-    //       循環シフトして格納する。
-    //
-    // これにより FFT 出力は基本的に「余計な位相因子」が乗りにくくなり、
-    // 実部比較などがしやすい。
-    // ------------------------------------------------------------
     for (int ix = 0; ix < Nx; ++ix) {
-        const double x = ix - Nx / 2.0;  // 物理座標: [-Nx/2, ..., Nx/2)
+        const double x = ix - Nx / 2.0;  // 座標 : [-Nx/2, ..., Nx/2)
         for (int iy = 0; iy < Ny; ++iy) {
             const double y = iy - Ny / 2.0;
 
             const double val = (gamma * gamma) / (x * x + y * y + gamma * gamma);
 
-            // 循環シフトして(0,0)に中心を置く
+            // シフトして(0,0)に中心を置く
             const int ix0 = (ix + Nx / 2) % Nx;
             const int iy0 = (iy + Ny / 2) % Ny;
 
-            in[idx(ix0, iy0, Ny)][0] = val;  // Re
-            in[idx(ix0, iy0, Ny)][1] = 0.0;  // Im
+            in[idx(ix0, iy0, Ny)][0] = val;  // 実部
+            in[idx(ix0, iy0, Ny)][1] = 0.0;  // 虚部
         }
     }
 
-    // FFTW plan & execute
+    // FFTW plan の作成及び実行
     fftw_plan plan = fftw_plan_dft_2d(Nx, Ny, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
     if (!plan) {
         std::cerr << "fftw_plan_dft_2d failed\n";
@@ -73,11 +64,6 @@ int main(int argc, char** argv) {
     }
     fftw_execute(plan);
 
-    // ------------------------------------------------------------
-    // 2) 実空間データを「見やすい座標系」で出力（中心が(0,0)）
-    //    ※出力は x,y を -N/2..N/2-1 として書く
-    //    ※配列は循環シフトしているので、取り出し時に逆シフトして並べ直す
-    // ------------------------------------------------------------
     {
         std::ofstream ofs("lorentzian_real.dat");
         ofs << "# x y f(x,y)\n";

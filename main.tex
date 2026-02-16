@@ -102,6 +102,30 @@ BLASはベクトルおよび行列に対する基本的な演算を提供する�
 \subsection{OpenMP(並列計算)}
 ループ計算を行うとき、メモリ並列を行って複数の計算を同時に行うことで時間が短縮できることがあります。その手段としてOpenMPが用いられます。並列化にはMPIという手段もありますが、MPIはプロセスごとに情報の通信を行う必要があり、やや学習コストが高いものとなっています。スレッド並列なので既存のコードをほとんど変えずに並列化可能なのが利点とも言えます。
 
+\section{計算環境の準備}
+数値計算に使うツールの概観を終えたので、次に環境構築に移ります。本稿ではWindows Subsystem for Linux(WSL)を導入して、仮想環境を構築します。理由の第一は筆者が使い慣れているために詳細が説明できることですが、他の利点としては、ソースコードの編集やコンパイル、実行、結果の整理といった一連の作業をコマンドラインで容易に行うことができる点があります。このような開発を\textbf{CUIベース}といいます。パラメータを変えながらプログラムを連続して走らせたりする場面では、シェルスクリプトやMakefileを用いた自動化も用いられ、その際はCUI前提の環境の方が圧倒的に相性が良いです。また物性研の計算サーバー(ohtaka, kugui)や東大情報基盤センターのWisteriaなどを利用する際はリモート接続によるCUIの操作が基本となります。そのため、CUIに慣れておくことは研究を継続するうえでも大切になるでしょう。
+
+PCを購入するとき、最初からOSがLinuxになっていることは少なく。WindowsかMacであることが多いと思います。WSLを用いると、Windows上に仮想的なLinux環境を導入することで、Linuxと同様の感覚でプログラムを開発・実行することが出来ます。これによりWindowsを日常的に使いながら、研究で必要なLinux環境を整えることが出来ます。またVisual Studio CodeのRemoteと組み合わせることで、エディタをWindows側で動かしつつ、実際のコンパイルや実行をLinux側で行うというある種分業的な使い方が出来ます。
+
+\subsection{WSLの有効化}
+WSLの導入はPowershellから行います。まずスタートメニューからPowershellと検索し、管理者として実行を選択して起動します。起動後、以下のコマンドを入力します。
+\begin{lstlisting}
+  wsl --install
+\end{lstlisting}
+このコマンドを実行すると、WSL本体が有効化およびLinuxディストリビューションのインストールが自動的に開始されます。\footnote{インストール途中で再起動を求められる場合があります。}
+
+WSLの導入が完了すると、スタートメニューからUbuntuと検索することで、Linux環境を起動することが出来ます。Ubuntuの初回起動画面ではユーザー名およびパスワードの設定を求められます。ここで設定したユーザー名とパスワードは、管理者権限を使用するときに必要となるため、忘れないようにしてください。
+
+設定が一通り終わると黒い画面のターミナルが表示されるので、コマンド入力が可能な状態になります。まずパッケージ管理システムを最新の状態に更新する必要があるので、ターミナル上で
+\begin{lstlisting}
+  sudo apt update
+  sudo apt upgrade
+\end{lstlisting}
+を実行してください。\texttt{sudo}とは、管理者権限でコマンドを実行するための命令で、実行時には設定したパスワードの入力のみが求められます。
+
+\subsection{Visual Studio Codeの導入}
+次にプログラムの編集および開発に用いるエディタとして、Visual Studio Code(VSCode)を導入する。VSCodeは軽量で拡張性が高いこと、またRemoteによりWSL環境との連携も容易であるために、本稿では標準的な開発環境として採用します。\footnote{ところでsshなどで大学のスパコンを用いる場合、標準装備されているエディタがemacsである場合もあります。}
+
 \chapter{C++による数値計算の基礎}
 
 \section{C++の文法速習}
@@ -374,6 +398,7 @@ reductionは各スレッドにprivateな変数を用意して、その変数を�
 reductionの基本的な構文は\texttt{\#pragma omp parallel for reduction(operator : variable)}で与えられます。例えば、変数Xに何かの総和を記録するときは、\texttt{\#pragma omp parallel for reduction(+ : X)}とします。
 
 \chapter{強束縛模型の解析}
+本稿では、物性理論における多くの解析の出発点として表れる強束縛模型の解析手法について述べますが、これまで述べたような対角化、フーリエ変換については一度おいておきます。のちに解説しますが、まずはバンド、フェルミ面、状態密度という基本的な解析対象について述べ、その実装方法について紹介します。
 \section{次近接ホッピングを導入した2次元正方格子の強束縛模型の構築}
 まず2次元正方格子上のシングルバンドの強束縛模型を実空間で構成し、その後フーリエ変換でによって波数空間表示を導きます。格子定数は1とします。格子点は$\bm{R}_i = (x_i, y_i)$で表され、 $i$ 番目の格子に対しフェルミオンの生成・消滅演算子$c_i^\dagger, c_i$ を導入します。スピン添え字は省略します。
 
@@ -503,9 +528,21 @@ $\Gamma = (0,0)$, $X = (\pi,0)$, $M = (0, \pi)$です。例えば縦軸にエネ
 
 フェルミ面を数値的に求める手順は、大まかには次の通りです。エネルギー分散は数値計算で離散的に求められますが、各点を線形補完し、$\varepsilon(\bm{k}_i)$と$\varepsilon(\bm{k}_{i+1})$とで符号が反転する箇所を取り出します。このようにして得られたフェルミ面はあくまで点の集合ですが、メッシュサイズを十分細かくすることによって視覚的には滑らかなフェルミ面として扱うことができます。
 
+\subsection{化学ポテンシャル$\mu$の自己無撞着な決定}
+エネルギー分散$\varepsilon(k)$が与えられたとき、温度$T$における粒子数$n$は化学ポテンシャル$\mu$の関数として定まる。したがって、充填数(filling)$n$を指定したときの化学ポテンシャル$\mu$を計算で求めたいという場面が表れる。そこで、目標とする$N$に対して$n(\mu) = N$を満たす$\mu$を自己無撞着に求めてみる。
+
+まず各$\bm{k}$の状態にある電子数は$\langle n_{\bm{k}} \rangle = f(\varepsilon(\bm{k}) - \mu)$で与えられる。ここで
+\begin{equation}
+  f(x) = \frac{1}{e^{\beta x} + 1} \qquad \beta = \frac{1}{T}
+\end{equation}
+である。スピン縮退を考えなければfillingは$0$から$1$までの値を取る。1サイトあたりの粒子数は、$\frac{1}{N} \sum_{\bm{k}} \langle n_{\bm{k}} \rangle = \frac{1}{N}\sum_{\bm{k}}f(\varepsilon(\bm{k}) - \mu)$で求まる。
+
+さて、目標充填数$n_{target}$を与えたとき、化学ポテンシャル$\mu$は$n(\mu) - n_{target} = 0$の根として定義される。ここで一般に$n(\mu)$は$\mu$に関して単調に変化するので、二分探索によってこの解を求めることが出来る。
+
+
 \begin{thebibliography}{9}
-  \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).
-  \bibitem{super} C R Dean 1, L Wang, P Maher, C Forsythe, F Ghahari, Y Gao, J Katoch, M Ishigami, P Moon, M Koshino, T Taniguchi, K Watanabe, K L Shepard, J Hone, P Kim, Hofstadter's butterfly and the fractal quantum Hall effect in moiré superlattices, Nature 497(7451), (2013)
+  % \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).
+  % \bibitem{super} C R Dean 1, L Wang, P Maher, C Forsythe, F Ghahari, Y Gao, J Katoch, M Ishigami, P Moon, M Koshino, T Taniguchi, K Watanabe, K L Shepard, J Hone, P Kim, Hofstadter's butterfly and the fractal quantum Hall effect in moiré superlattices, Nature 497(7451), (2013)
 \end{thebibliography}
 
 
