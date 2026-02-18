@@ -6,7 +6,7 @@
 \usepackage{multicol}
 \usepackage[dvipdfmx]{pict2e}
 \usepackage{wrapfig}
-\usepackage{graphicx}
+\usepackage[dvipdfmx]{graphicx}
 \usepackage{listings}
 \usepackage{bm}
 \usepackage{url}
@@ -18,25 +18,62 @@
 % \usepackage{ulem}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{hyperref}
 \usepackage{algorithmic}
 \usepackage{textcomp}
-\usepackage{xcolor}
+\usepackage[dvipdfmx]{xcolor}
+\usepackage[most]{tcolorbox}
 \usepackage[ipaex]{pxchfon}
 \usepackage{titlesec}
 \usepackage[normalem]{ulem}
+\usepackage{tabularx}
+\usepackage{setspace}
+\usepackage[colorlinks=true,      urlcolor=sectionblue]{hyperref}
+\usepackage{tikz}
+
+\setstretch{1.2}
 
 \definecolor{terminalbg}{RGB}{30,30,30}
 \definecolor{terminalfg}{RGB}{230,230,230}
 
 \definecolor{chaptercolor}{RGB}{60,90,160}
-\definecolor{sectioncolor}{RGB}{03,90,255}
+\definecolor{sectioncolor}{RGB}{60,90,160}
+\definecolor{subsectioncolor}{RGB}{80,120,180}
+
+\definecolor{sectionblue}{RGB}{90,110,170}
+\definecolor{sectionlight}{RGB}{220,225,240}
+
+\definecolor{tableblue}{RGB}{80,110,180}
+\definecolor{tablegray}{RGB}{245,247,250}
+
+\definecolor{chapterblue}{RGB}{70,100,170}
+\definecolor{chapterlight}{RGB}{220,230,250}
 
 % チャプターの見せ方
-\titleformat{\chapter}
-  {\Huge\bfseries\color{chaptercolor}}
-  {\thechapter}
-  {20pt}{}
+% \titleformat{\chapter}
+%   {\Huge\bfseries\color{chaptercolor}}
+%   {\thechapter}
+%   {20pt}{}
+
+% \titleformat{\chapter}
+%   {\normalfont}
+%   {}
+%   {0pt}
+%   {\chapterribbon}
+
+
+% \titleformat{\chapter}
+%   {\normalfont}
+%   {}
+%   {0pt}
+%   {%
+%     \vspace*{-1.0\baselineskip}%
+%     \begin{chapterbox}
+%       {\Huge\bfseries Chapter~\thechapter}\par
+%       \vspace{4pt}
+%       {\LARGE\bfseries #1}
+%     \end{chapterbox}
+%     \vspace{1.2\baselineskip}
+%   }
 
 % セクションの見せ方
 \titleformat{\section}
@@ -79,6 +116,70 @@
   moredelim=**[is][\color{green}]{$}{$}
 }
 
+\titleformat{\subsection}
+  {\Large}
+  {\thesubsection}
+  {1em}
+  {\subsectionline}
+
+\newcommand{\subsectionline}[1]{%
+  \begin{tikzpicture}[baseline=(X.base)]
+    \node[inner sep=0pt] (X) {\bfseries #1};
+    \draw[draw=subsectioncolor, line width=1pt]
+      (X.south west) -- (X.south east);
+  \end{tikzpicture}
+}
+
+\newcommand{\myurl}[1]{%
+\begin{tcolorbox}[
+  colback=gray!10,
+  colframe=sectionblue,
+  boxrule=0.5pt,
+  arc=4pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt]
+\texttt{#1}
+\end{tcolorbox}
+}
+
+% --- Chapter ribbon (SAFE version) ----------------
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+\definecolor{chapterblue}{RGB}{70,100,170}
+\definecolor{chapterlight}{RGB}{220,230,250}
+
+% ※ ここが重要：すでに chapterbox が定義済みなら new しない
+\newtcolorbox{chapterbox}{
+  enhanced,
+  colback=chapterlight,
+  colframe=chapterblue,
+  boxrule=0pt,
+  arc=6pt,
+  left=14pt,right=10pt,top=10pt,bottom=10pt,
+  borderline west={8pt}{0pt}{chapterblue},
+  width=\textwidth,
+}
+
+\newcommand{\ChapterRibbonBox}[1]{%
+  \vspace*{-0.5\baselineskip}%
+  \begin{chapterbox}
+    {\Huge\bfseries Chapter~\thechapter}\par
+    \vspace{4pt}
+    {\LARGE\bfseries #1}%
+  \end{chapterbox}%
+  \vspace{1.0\baselineskip}%
+}
+
+\titleformat{\chapter}
+  {\normalfont}
+  {}
+  {0pt}
+  {\ChapterRibbonBox}
+% -------------------------------------------------
 
 \begin{document}
 
@@ -157,7 +258,7 @@ WSLの導入が完了すると、スタートメニューからUbuntuと検索�
 設定が一通り終わると黒い画面のターミナルが表示されるので、コマンド入力が可能な状態になります。まずパッケージ管理システムを最新の状態に更新する必要があるので、ターミナル上で
 \begin{lstlisting}[style=terminal]
   $ sudo apt update
-  $ sudo apt upgrade
+   sudo apt upgrade
 \end{lstlisting}
 を実行してください。\texttt{sudo}とは、管理者権限でコマンドを実行するための命令で、実行時には設定したパスワードの入力のみが求められます。
 
@@ -167,7 +268,7 @@ WSLの導入が完了すると、スタートメニューからUbuntuと検索�
 
 まず、公式サイトからVSCodeをダウンロードします。
 
-\url{https://code.visualstudio.com/}
+\myurl{https://code.visualstudio.com/}
 
 ブラウザで上記ページを開き、Download for Windowsを選択してインストーラを取得します。ダウンロードしたインストーラを実行し、画面の指示に従ってインストールを進めてください。インストールの途中で
 \begin{itemize}
@@ -194,6 +295,75 @@ WSLの導入が完了すると、スタートメニューからUbuntuと検索�
 . は現在いるディレクトリを指し、ここでcodeを実行するという意味です。このコマンドを実行することでVSCodeが起動し、現在のディレクトリがワークスペースとして開かれます。同時に画面左下に「WSL : Ubuntu」と表示され、Linux環境に接続されていることが確認できます。この状態ではVSCodeで編集しているファイルはすべてWSL側のLinuxファイルシステム上に存在していて、コンパイルや実行もLinuxの環境で行われます。\footnote{画面左下にWSL : Ubuntuと表示されていない場合は、左下の緑色のアイコンをクリックして「Connect to WSL」を選択してください。}
 
 VSCodeにはターミナルが内蔵されていますが、WSLに接続された状態でVS COdeを開くと、内蔵ターミナルもLinux環境として動作します。VS Code上で\texttt{Ctrl + '}を押すとターミナルが開きます。ここで表示されるシェルがUbuntuのbashになっていれば正しく接続されています。\footnote{内臓ターミナルはエディタ内で開発を完結させることが出来て便利ですが、ログが見にくくなったりする欠点もあります。必要に応じて使い分けてください。}
+
+\subsection{ファイル操作のコマンド}
+\begin{table}[H]
+\centering
+\caption{ファイル操作でよく使うコマンド}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{tableblue!20}
+\textbf{コマンド} &  \textbf{概要} \\
+\hline
+
+pwd &
+作業中のディレクトリ（カレントディレクトリ）を表示する。 \\
+\hline
+
+ls & 
+ディレクトリ内のファイル一覧を表示する。
+\texttt{ls -l}（詳細表示）, \texttt{ls -a}（隠しファイル含む）, \texttt{ls -lh}（サイズの表示）がよく使われる。 \\
+\hline
+
+cd & 
+ディレクトリを移動する。
+\texttt{cd ..}（1つ上の階層へ移動）, \texttt{cd \textasciitilde{}}（ホームへ移動）, \texttt{cd -}（直前作業していたディレクトリへ移動）等をよく使う。 \\
+\hline
+
+mkdir &
+新しいディレクトリを作成する。
+\texttt{mkdir -p a/b/c} で途中の階層もまとめて作れる。 \\
+\hline
+
+touch &
+新しい空ファイルを作る。 \\
+\hline
+
+cp & 
+ファイル/ディレクトリをコピーする。
+ディレクトリは \texttt{cp -r dir1 dir2}とすれば、「dir1をdir2以下にコピーする」ことになる。
+\footnote{上書き防止に \texttt{cp -i}も有用です}。 \\
+\hline
+
+mv &
+ファイルを移動する，または名前変更する（実体は同じ）。
+\texttt{mv old new} がリネームとして頻出。 \\
+\hline
+
+rm  &
+ファイルを削除する。
+\texttt{rm -r} はディレクトリ削除，\texttt{rm -i} は確認。
+\textbf{復元が基本できない}ので慎重に使う。 \\
+\hline
+
+cat &
+ファイルをそのまま表示する。
+短い設定ファイル確認に便利だが長文には不向き。 \\
+\hline
+
+less  &
+長いファイルをページング表示する。
+\texttt{/} で検索，\texttt{q} で終了。ログ閲覧の必須。 \\
+\hline
+
+find  &
+名前や更新日時などの条件でファイルを探す。
+例：\texttt{find . -name "*.cpp"}。 \\
+\hline
+
+\end{tabularx}
+\end{table}
 
 \subsection{C++ / Python 開発環境の構築}
 ここまででWSL上のUbuntuとVS Codeを連携させ、Linux環境上でプログラムを編集及び実行できる状態が整っています。以降は、本稿で扱う数値計算を行うために必要となるC++ および Pythonの開発環境を構築します。
@@ -251,18 +421,72 @@ Pythonの良いところはデータを可視化するためのライブラリ�
 
 \subsection{zheevの引数}
 zheevの引数はこちらが考えて指定するものはそれほど多くなく、慣れれば簡単に実装できるようになりますが、一応各引数の説明をします。
-\begin{itemize}
-  \item \texttt{jobz} : char型。'V'か'N'の値をとる。'V'では固有値と固有ベクトルを計算する。'N'では固有値のみを計算する。
-  \item \texttt{uplo} : char型。'U'か'L'の値を取る。エルミート行列は上三角部分と下三角部分さえ参照すれば全体の情報が分かるので、どちらの部分を参照するかを指定する。
-  \item \texttt{n} : int型。対角化する行列のサイズを入力する。$3 \times 3$行列なら3と入力する。
-  \item \texttt{a(n*n)} : \texttt{std::vector<std::complex<double>>}型。入力として、対角化したい行列を与える。
-  \item \texttt{lda} : int型。普通はnでよい。これは1次元配列として行列を考えたときに、次の列の情報をメモリのどこに渡すかを指定するものなので、nより大きな値を指定しても動く場合が多い。むしろnより小さな値を与えると意図しない結果をもたらすことになる。
-  \item \texttt{w} : \texttt{std::vector<double>}型。行列の固有値を昇順に返す。エルミート行列の固有値はすべて実数であるので、double型としてよい。
-  \item \texttt{lwork} : int型で、最初に-1を指定する。対角化しようとしている行列サイズで作業配列がどれくらい必要かをLAPACKに問い合わせるための引数。
-  \item \texttt{work} : \texttt{std::complex<double>*}型。lworkで取得したサイズでworkを確保する。
-  \item \texttt{rwork} : \texttt{std::vector<double>}型。ふつうは\texttt{3*n-2}で指定する。
-  \item \texttt{info} : int型。対角化の一連の作業が正常終了したかどうかを表し、例外処理などに用いる。infoが0なら正常終了しているが、それ以外の場合はどこかで失敗している。infoが正の値であると、$-\mathrm{info}$番目の引数に不正があったことが示される。infoが正の場合は固有値計算が収束しなかったことを示す。
-\end{itemize}
+% 
+\begin{table}[H]
+\centering
+\caption{LAPACK固有値計算ルーチンの主な引数}
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\rowcolor{tableblue!20}
+\textbf{引数名} & \textbf{型} & \textbf{概要} \\
+\hline
+
+jobz & char &
+'V' または 'N' を指定する。
+'V' では固有値と固有ベクトルを計算し，
+'N' では固有値のみを計算する。 \\
+\hline
+
+uplo & char &
+'U' または 'L' を指定する。
+エルミート行列の上三角部分または下三角部分の
+どちらを参照するかを指定する。 \\
+\hline
+
+n & int &
+対角化する行列のサイズ。
+$3\times3$ 行列の場合は 3 を指定する。 \\
+\hline
+
+a & std::vector$<$complex$<$double$>>$ &
+対角化したい行列の成分を格納する配列。 \\
+\hline
+
+lda & int &
+先頭次元。
+通常は n でよい。
+n より小さい値を与えると誤動作の原因となる。 \\
+\hline
+
+w & std::vector$<$double$>$ &
+固有値を昇順で格納する配列。
+エルミート行列の固有値は実数である。 \\
+\hline
+
+lwork & int &
+作業配列サイズ取得用。
+最初に -1 を指定して必要サイズを問い合わせる。 \\
+\hline
+
+work & complex$<$double$>$* &
+lwork で取得したサイズに基づいて確保する作業配列。 \\
+\hline
+
+rwork & std::vector$<$double$>$ &
+実数作業配列。
+通常は $3n-2$ を指定する。 \\
+\hline
+
+info & int &
+計算の終了状態を示す。
+0 なら正常終了，
+0 以外はエラーを示す。 \\
+\hline
+
+\end{tabularx}
+\end{table}
 zheevは入力で与えた行列を上書きするので、元のハミルトニアンを別に使いたい場合は、対角化前に行列をコピーして保持しておくべきです。
 
 \subsection{コンパイルおよび実行}
@@ -383,14 +607,63 @@ FFTWの関数名は、どの型からどの型への変換か、また何次元�
 );}
 の引数の解説です。
 
-\begin{itemize}
-  \item \texttt{n0} : int型。第1次元の格子点の数。
-  \item \texttt{n1} : int型。第2次元の格子点の数。
-  \item \texttt{in} : fftw_complex*型。入力となる複素数配列を示す。実部と虚部を切り分ける必要があり、ある数aに対して\texttt{in[ix * n1 + iy][0] = a.real(); in[ix * n1 + iy][1] = a.imag();}を指定しなければならない。
-  \item \texttt{out} : fftw_complex*型。出力用の複素数配列。入力の配列が破壊されてしまうことを許容すれば\texttt{in == out}としてもよい。
-  \item \texttt{sign} : int型。指定可能な値は\texttt{FFTW_FORWARD}か\texttt{FFTW_BACKWARD}の2つである。それぞれ順変換と逆変換に対応する。逆変換後には正規化を行うべし。
-  \item \texttt{flags} : unsigned型。\texttt{FFTW_ESTIMATE}と\texttt{FFTW_MEASURE}の2つがある。
-\end{itemize}
+% \begin{itemize}
+%   \item \texttt{n0} : int型。第1次元の格子点の数。
+%   \item \texttt{n1} : int型。第2次元の格子点の数。
+%   \item \texttt{in} : fftw_complex*型。入力となる複素数配列を示す。実部と虚部を切り分ける必要があり、ある数aに対して\texttt{in[ix * n1 + iy][0] = a.real(); in[ix * n1 + iy][1] = a.imag();}を指定しなければならない。
+%   \item \texttt{out} : fftw_complex*型。出力用の複素数配列。入力の配列が破壊されてしまうことを許容すれば\texttt{in == out}としてもよい。
+%   \item \texttt{sign} : int型。指定可能な値は\texttt{FFTW_FORWARD}か\texttt{FFTW_BACKWARD}の2つである。それぞれ順変換と逆変換に対応する。逆変換後には正規化を行うべし。
+%   \item \texttt{flags} : unsigned型。\texttt{FFTW_ESTIMATE}と\texttt{FFTW_MEASURE}の2つがある。
+% \end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{FFTW 2次元フーリエ変換ルーチンの主な引数}
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\rowcolor{tableblue!20}
+\textbf{引数名} & \textbf{型} & \textbf{概要} \\
+\hline
+
+n0 & int &
+第1次元方向の格子点数を指定する。 \\
+\hline
+
+n1 & int &
+第2次元方向の格子点数を指定する。 \\
+\hline
+
+in & fftw\_complex* &
+入力用複素数配列。
+実部・虚部を分けて格納する必要があり，
+例えば複素数 $a$ に対して
+\texttt{in[ix*n1+iy][0]=a.real();\ in[ix*n1+iy][1]=a.imag();}
+のように指定する。 \\
+\hline
+
+out & fftw\_complex* &
+出力用複素数配列。
+入力配列の破壊を許容する場合は
+\texttt{in==out} としてもよい。 \\
+\hline
+
+sign & int &
+変換方向を指定する。
+\texttt{FFTW\_FORWARD} は順変換，
+\texttt{FFTW\_BACKWARD} は逆変換に対応する。
+逆変換後には正規化を行う必要がある。 \\
+\hline
+
+flags & unsigned int &
+計算方法を指定するフラグ。
+\texttt{FFTW\_ESTIMATE} および
+\texttt{FFTW\_MEASURE} が利用可能である。 \\
+\hline
+
+\end{tabularx}
+\end{table}
 
 \subsection{フーリエ変換の手順}
 chapter2-2.cppにFFTWを用いて実空間表示の関数を波数空間の関数にフーリエ変換するプログラムを示します。実空間表示の関数として、ここでは2次元格子上ローレンチアン
