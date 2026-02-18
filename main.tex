@@ -15,7 +15,7 @@
 \usepackage{subfigure}
 \usepackage{tabularx}
 \usepackage{fancyhdr}
-\usepackage{ulem}
+% \usepackage{ulem}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{hyperref}
@@ -23,6 +23,33 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage[ipaex]{pxchfon}
+\usepackage{titlesec}
+\usepackage[normalem]{ulem}
+
+\definecolor{terminalbg}{RGB}{30,30,30}
+\definecolor{terminalfg}{RGB}{230,230,230}
+
+\definecolor{chaptercolor}{RGB}{60,90,160}
+\definecolor{sectioncolor}{RGB}{03,90,255}
+
+% チャプターの見せ方
+\titleformat{\chapter}
+  {\Huge\bfseries\color{chaptercolor}}
+  {\thechapter}
+  {20pt}{}
+
+% セクションの見せ方
+\titleformat{\section}
+  {\Large\bfseries\color{sectioncolor}}
+  {\thesection}
+  {20pt}{}
+
+% サブセクションの見せ方  
+\titleformat{\subsection}
+  {\Large\bfseries}
+  {\thesubsection}
+  {1em}
+  {\uline}
 
 \lstdefinestyle{cppbook}{
   language=C++,
@@ -40,6 +67,16 @@
   columns=fullflexible,
   keepspaces=true,
   captionpos=b
+}
+
+%ターミナルのような背景
+\lstdefinestyle{terminal}{
+  backgroundcolor=\color{black},
+  basicstyle=\ttfamily\small\color{white},
+  frame=none,
+  numbers=none,
+  showstringspaces=false,
+  moredelim=**[is][\color{green}]{$}{$}
 }
 
 
@@ -64,6 +101,7 @@
 最後に、本書はあくまでも研究室内ドキュメントであり必要に応じて参照すればよいと思いますが、内容をしっかり理解したい方は掲載されているプログラムを自分の手で実装してみるとよいと思います。最初はコードの写経でもよいですが、書き換えや順序の入れ替えで挙動がどうなるかをチェックするとより理解が深まるかと思います。
 
 \chapter{プログラミング言語の選択と環境構築}
+
 \section{数値計算向きの言語(C++, Fortran)}
 数値計算という目的に絞ってもプログラミング言語の選択肢は多岐にわたりますが、物性物理で格子模型や多体問題を扱う場合、計算量は系の大きさや自由度の増加とともに急激に増大します。したがって、実行速度やメモリ配置を意識する必要があり、C++やFortranはそれにふさわしい選択肢の一つとして挙げられます。明示的に型が指定されるために、数値誤差のふるまいを把握しやすくなるのも重要です。
 
@@ -105,30 +143,105 @@ BLASはベクトルおよび行列に対する基本的な演算を提供する�
 \section{計算環境の準備}
 数値計算に使うツールの概観を終えたので、次に環境構築に移ります。本稿ではWindows Subsystem for Linux(WSL)を導入して、仮想環境を構築します。理由の第一は筆者が使い慣れているために詳細が説明できることですが、他の利点としては、ソースコードの編集やコンパイル、実行、結果の整理といった一連の作業をコマンドラインで容易に行うことができる点があります。このような開発を\textbf{CUIベース}といいます。パラメータを変えながらプログラムを連続して走らせたりする場面では、シェルスクリプトやMakefileを用いた自動化も用いられ、その際はCUI前提の環境の方が圧倒的に相性が良いです。また物性研の計算サーバー(ohtaka, kugui)や東大情報基盤センターのWisteriaなどを利用する際はリモート接続によるCUIの操作が基本となります。そのため、CUIに慣れておくことは研究を継続するうえでも大切になるでしょう。
 
-PCを購入するとき、最初からOSがLinuxになっていることは少なく。WindowsかMacであることが多いと思います。WSLを用いると、Windows上に仮想的なLinux環境を導入することで、Linuxと同様の感覚でプログラムを開発・実行することが出来ます。これによりWindowsを日常的に使いながら、研究で必要なLinux環境を整えることが出来ます。またVisual Studio CodeのRemoteと組み合わせることで、エディタをWindows側で動かしつつ、実際のコンパイルや実行をLinux側で行うというある種分業的な使い方が出来ます。
+PCを購入するとき、最初からOSがLinuxになっていることは少なく、WindowsかMacであることが多いと思います。WSLを用いると、Windows上に仮想的なLinux環境を導入することで、Linuxと同様の感覚でプログラムを開発・実行することが出来ます。これによりWindowsを日常的に使いながら、研究で必要なLinux環境を整えることが出来ます。またVisual Studio CodeのRemoteと組み合わせることで、エディタをWindows側で動かしつつ、実際のコンパイルや実行をLinux側で行うというある種分業的な使い方が出来ます。
 
 \subsection{WSLの有効化}
 WSLの導入はPowershellから行います。まずスタートメニューからPowershellと検索し、管理者として実行を選択して起動します。起動後、以下のコマンドを入力します。
-\begin{lstlisting}
-  wsl --install
+\begin{lstlisting}[style=terminal]
+ $ wsl --install
 \end{lstlisting}
 このコマンドを実行すると、WSL本体が有効化およびLinuxディストリビューションのインストールが自動的に開始されます。\footnote{インストール途中で再起動を求められる場合があります。}
 
 WSLの導入が完了すると、スタートメニューからUbuntuと検索することで、Linux環境を起動することが出来ます。Ubuntuの初回起動画面ではユーザー名およびパスワードの設定を求められます。ここで設定したユーザー名とパスワードは、管理者権限を使用するときに必要となるため、忘れないようにしてください。
 
 設定が一通り終わると黒い画面のターミナルが表示されるので、コマンド入力が可能な状態になります。まずパッケージ管理システムを最新の状態に更新する必要があるので、ターミナル上で
-\begin{lstlisting}
-  sudo apt update
-  sudo apt upgrade
+\begin{lstlisting}[style=terminal]
+  $ sudo apt update
+  $ sudo apt upgrade
 \end{lstlisting}
 を実行してください。\texttt{sudo}とは、管理者権限でコマンドを実行するための命令で、実行時には設定したパスワードの入力のみが求められます。
 
 \subsection{Visual Studio Codeの導入}
-次にプログラムの編集および開発に用いるエディタとして、Visual Studio Code(VSCode)を導入する。VSCodeは軽量で拡張性が高いこと、またRemoteによりWSL環境との連携も容易であるために、本稿では標準的な開発環境として採用します。\footnote{ところでsshなどで大学のスパコンを用いる場合、標準装備されているエディタがemacsである場合もあります。}
+次にプログラムの編集および開発に用いるエディタとして、Visual Studio Code(VSCode)を導入します。VSCodeは軽量で拡張性が高いこと、またRemoteによりWSL環境との連携も容易であるために、本稿では標準的な開発環境として採用します。\footnote{sshなどで大学のスパコンを用いる場合、標準装備されているエディタがemacsである場合もあります。}
+ここで重要なのが、VSCodeはWindows側にインストールするということです。WSLからsudo apt install codeしてエディタを導入することもできますが、Windows上で動作するVSCodeからLinux環境に接続することで安定した開発環境を構築できます。
+
+まず、公式サイトからVSCodeをダウンロードします。
+
+\url{https://code.visualstudio.com/}
+
+ブラウザで上記ページを開き、Download for Windowsを選択してインストーラを取得します。ダウンロードしたインストーラを実行し、画面の指示に従ってインストールを進めてください。インストールの途中で
+\begin{itemize}
+  \item PATHに環境変数を追加する
+\end{itemize}
+にチェックをしてください。コマンドラインからVSCodeを起動できるようにするために必要です。
+
+
+インストールが完了したら、スタートメニューからVSCodeを起動します。正常に起動するとエディタ画面が表示されると思います。VSCodeが正しくインストールされていることを確認するためには、Windows側のPowershellまたはコマンドプロンプトを開いて、
+\begin{lstlisting}[style=terminal]
+  $ code --version
+\end{lstlisting}
+を入力します。バージョン番号が表示されればVSCodeの導入は正常に完了しています。
+
+次にVSCodeのRemote - WSLを用いて、Windows上のエディタからLinux環境へ接続する方法について説明します。Remote - WSLはVSCodeからWSL上のLinux環境に直接アクセスし、ソースコードの編集・実行・デバッグを行うための拡張機能です。これにより、エディタはWindowsで動作しつつ、実際の開発環境をLinuxで行うという環境が実現します。
+
+まずVSCodeを起動し、左側のメニューから「拡張機能(Extensions)」アイコンを選択します。検索欄にRemote WSLと入力すると、拡張機能が表示されるのでこれをインストールします。\footnote{コマンドパレットを用いてインストールすることもできます。VSCode上で\texttt{ctrl+Shift+P}を押し、Extensions:install Extenstions と入力して検索を書けることもできます。}
+
+次にUbuntuのターミナルからVSCodeを起動します。Ubuntuを起動して任意の作業ディレクトリに移動した後、以下を実行します。
+
+\begin{lstlisting}[style=terminal]
+  $ code .
+\end{lstlisting}
+. は現在いるディレクトリを指し、ここでcodeを実行するという意味です。このコマンドを実行することでVSCodeが起動し、現在のディレクトリがワークスペースとして開かれます。同時に画面左下に「WSL : Ubuntu」と表示され、Linux環境に接続されていることが確認できます。この状態ではVSCodeで編集しているファイルはすべてWSL側のLinuxファイルシステム上に存在していて、コンパイルや実行もLinuxの環境で行われます。\footnote{画面左下にWSL : Ubuntuと表示されていない場合は、左下の緑色のアイコンをクリックして「Connect to WSL」を選択してください。}
+
+VSCodeにはターミナルが内蔵されていますが、WSLに接続された状態でVS COdeを開くと、内蔵ターミナルもLinux環境として動作します。VS Code上で\texttt{Ctrl + '}を押すとターミナルが開きます。ここで表示されるシェルがUbuntuのbashになっていれば正しく接続されています。\footnote{内臓ターミナルはエディタ内で開発を完結させることが出来て便利ですが、ログが見にくくなったりする欠点もあります。必要に応じて使い分けてください。}
+
+\subsection{C++ / Python 開発環境の構築}
+ここまででWSL上のUbuntuとVS Codeを連携させ、Linux環境上でプログラムを編集及び実行できる状態が整っています。以降は、本稿で扱う数値計算を行うために必要となるC++ および Pythonの開発環境を構築します。
+
+まずはC++及びFortranのコンパイルに必要となる基本的なツール群を紹介します。ターミナル上で以下のコマンドを実行してください。
+\begin{lstlisting}[style=terminal]
+  $ sudo apt install -y build-essential gfortran make cmake
+\end{lstlisting}
+するとg++, gcc, gfortranといったコンパイラがインストールされます。これらはそれぞれC++, C, Fortranのコンパイラに対応し、作ったプログラムをコンパイル(機械語への翻訳)して実行ファイルを作成するために必要です。またmake や cmake はビルドの管理・設定に必要なツールとなっています。
+
+次に主要な数値計算のライブラリをインストールします。
+\begin{lstlisting}[style=terminal]
+  $ sudo apt install -y libblas-dev liblapack-dev libfftw3-dev
+\end{lstlisting}
+これにより、BLAS/LAPACK(線形代数の演算に必要なライブラリ)、FFTW3(高速フーリエ変換に必要なライブラリ)がインストールされます。なお並列化に必要なOpenMPはg++に標準で組み込まれており、コンパイル時に\texttt{-fopenMP}とオプションを追加することで使用できます。
+
+引き続いてPython環境の構築も行います。ターミナルで以下を実行してください。
+\begin{lstlisting}[style=terminal]
+  $ sudo apt install -y python3 python3-pip python3-venv
+\end{lstlisting}
+Python本体とパッケージ管理ツールが導入されます。
+次に数値計算・可視化で頻繁に用いられる\texttt{numpy}や\texttt{scipy}, \texttt{matplotlib}といった主要なライブラリを導入します。
+\begin{lstlisting}[style=terminal]
+  $ pip3 install --user numpy scipy matplotlib
+\end{lstlisting}
+数値計算に使うライブラリは特にNumPyとSciPyです。NumPyは行列演算やフーリエ変換のみならず、かなりオールマイティな数値計算ライブラリです。SciPyは微分方程式を解く際などにしばしば用いられます\footnote{筆者はあまり使ったことがありませんが……。}。
+Pythonの良いところはデータを可視化するためのライブラリも充実していることです。特にグラフ描画などに\texttt{Matplotlib}が使われます。
+
+\subsection{動作確認}
+環境構築が成功しているかを確かめるために、Hello Worldを行います\footnote{説明するのは野暮ですが、プログラムが正しく動作するかを確かめるために、"Hello World"を標準出力させる文化があります。}。まずC++が動作するかをたしかめます。chapter1-1.cppはターミナルに"Hello World!"を標準出力させるプログラムです。以下のコマンドで実行することができます。
+
+\begin{lstlisting}[style=terminal]
+  $ g++ chapter1-1.cpp -o main
+   ./main
+\end{lstlisting}
+ターミナルに"Hello World!"が出力されれば成功です。
+
+次にPython3の動作確認をします。Python3はファイルを作っても良いのですが、ターミナルから以下を直接うちこむことでも"Hello World"の出力を行うことができます。
+
+\begin{lstlisting}[style=terminal]
+   $ python3 -c 'import numpy, scipy, matplotlib; print("Hello World!")'
+\end{lstlisting}
+
 
 \chapter{C++による数値計算の基礎}
 
-\section{C++の文法速習}
+\section{コンパイル}
+
 
 \section{C++による対角化}
 本節では、C++からLAPACKを呼び出してエルミート行列を対角化するための手順をまとめます。複素行列を扱うか実対称行列を扱うかで用いるLAPACKのルーチンが異なる点にも注意すべきですが、呼び出し自体は数行で済みます。
@@ -154,11 +267,11 @@ zheevは入力で与えた行列を上書きするので、元のハミルトニ
 
 \subsection{コンパイルおよび実行}
 LAPACKは単体では動かず、内部でBLASも呼び出しています。したがって、C++でLAPACKを使う場合、リンク時にLAPACKとBLASを同時にリンクする必要があります。コンパイルは
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
   g++ chapter2-1.cpp -O2 -llapack -lblas -o main
 \end{lstlisting}
 のように行います。無事コンパイルが終わると実行ファイル\texttt{main}が生成されるので、
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
   ./main
 \end{lstlisting}
 で実行できます。
@@ -195,7 +308,7 @@ LAPACKの関数をC++から呼ぶために、\texttt{extern "C"}という宣言�
 上の2つの性質から、固有ベクトルを並べた行列$V$が$V^{\dagger}V = \mathcal{I}$を満たすことがわかります。
 
 chapter2-1.cppを実行すると、出力結果は以下のようになります。
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
 Eigenvalues (ascending):
   w[0] = 0.950288
   w[1] = 1.96487
@@ -215,7 +328,7 @@ Max residual norm2: 4.44957e-16
 
 \subsection{FFTWにおける型}
 FFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
   typedef double fftw_complex[2];
 \end{lstlisting}
 のように定められています。\texttt{[0]}には実部が、\texttt{[1]}には虚部が対応しています。FFTWで扱う引数は、\texttt{std::complex<double>}を受け付けないので、FFTの際は複素数型に必ずfftw_complexを指定しましょう。
@@ -224,7 +337,7 @@ FFTWを用いる際は、通常では見慣れない型がいくつか登場し�
 
 \subsection{planとは何か}
 FFTWでFFTを実行する場合は、\texttt{fftw_plan}型を持つ変数planを用意します。例えば2次元DFTを複素関数から複素関数に対して与える場合は
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
 fftw_plan plan = fftw_plan_dft_2d(...);
 fftw_execute(plan);  
 \end{lstlisting}
@@ -344,7 +457,7 @@ OpenMPはメモリ共有によって並列計算を行うためのAPIで、C++�
 
 \subsection{基本的な使い方}
 OpenMPはコンパイラが対応している必要がありますが、本稿で主に用いるg++ではデフォルトで使うことが出来ます。使用時はコンパイルオプションに-fopenmpを付ければよく、例えばコンパイル時に
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
   g++ -O2 -fopenmp main.cpp -o main
 \end{lstlisting}
 とします。
@@ -357,7 +470,7 @@ OpenMPはコンパイラが対応している必要がありますが、本稿�
 \end{itemize}
 
 スレッド数は実行時に環境変数を指定すれば変更することが出来ます。例えば実行前に
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
 export OMP_NUM_THREADS=4
 \end{lstlisting}
 とすれば、OpenMPは4スレッドで実行されます。
@@ -365,7 +478,7 @@ export OMP_NUM_THREADS=4
 \subsection{\texttt{parallel / parallel for}}
 chapter2-3-1.cppをコンパイルし実行してみましょう。正しい挙動を示せば出力は以下のようになるはずです。
 
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
 thread 9 / 16
 thread 10 / 16
 thread 2 / 16
@@ -375,7 +488,7 @@ thread 2 / 16
 まず\texttt{\#pragma omp parallel}でparallel regionを作成すると、OpenMPがスレッドを複数作成します。この場合は16本作成されています。\texttt{omp_get_thread_num()}がスレッド番号を、\texttt{omp_get_num_threads()}がparallel regionの中のスレッド数を指しています。つまり\texttt{thread i / 16}は16本あるスレッドのうちi番目のスレッドが標準出力を実行したことになります。
 
 chapter2-3-2.cppをコンパイルし実行すると、出力は以下のようになります。
-\begin{lstlisting}
+\begin{lstlisting}[style=terminal]
 i = 6, thread = 6
 i = 0, thread = 0
 i = 7, thread = 7
