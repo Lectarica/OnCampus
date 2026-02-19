@@ -41,6 +41,10 @@
 
 \definecolor{sectionblue}{RGB}{90,110,170}
 \definecolor{sectionlight}{RGB}{220,225,240}
+\definecolor{sectionbg}{RGB}{80,80,245} % 薄い青
+\definecolor{sectionfg}{RGB}{255,255,255} % 白
+\definecolor{sectionpin}{RGB}{70,110,170}  % ピン色（濃い青）
+\definecolor{sectionpinhi}{RGB}{120,160,220} % ピンのハイライト
 
 \definecolor{tableblue}{RGB}{80,110,180}
 \definecolor{tablegray}{RGB}{245,247,250}
@@ -48,38 +52,152 @@
 \definecolor{chapterblue}{RGB}{70,100,170}
 \definecolor{chapterlight}{RGB}{220,230,250}
 
-% チャプターの見せ方
-% \titleformat{\chapter}
-%   {\Huge\bfseries\color{chaptercolor}}
-%   {\thechapter}
-%   {20pt}{}
+\definecolor{codebg}{RGB}{255,250,235}
+\definecolor{codeframe}{RGB}{180,140,80}
+\definecolor{codekeyword}{RGB}{0,92,184}   % キーワード（青）
+\definecolor{codestring}{RGB}{163,21,21}   % 文字列（赤茶）
+\definecolor{codecomment}{RGB}{0,128,0}    % コメント（緑）
+\definecolor{codetype}{RGB}{43,145,175}    % 型っぽい色（水色）
+\definecolor{codenumber}{RGB}{120,120,120}% 行番号など（グレー）
 
-% \titleformat{\chapter}
+\tcbuselibrary{listings,breakable}
+
+\newtcblisting{codebox}[2][]{
+  listing only,
+  breakable,
+  colback=codebg,
+  colframe=codeframe,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=8pt,right=6pt,top=6pt,bottom=6pt,
+  listing options={
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=6pt,
+    tabsize=2,
+    breaklines=true,
+    frame=none,
+    showstringspaces=false,
+    language=#2,
+    style=mystyle
+  },
+  title=#1,
+  fonttitle=\bfseries,
+}
+
+\lstset{
+  morekeywords={std,vector,string,complex,double,int,size_t,fftw_plan,fftw_complex},
+  keywordstyle=\color{codekeyword}\bfseries,
+  xleftmargin=2.6em,
+  framexleftmargin=2.6em,
+}
+
+\lstdefinestyle{mystyle}{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{codekeyword}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  numberstyle=\tiny\color{codenumber},
+  numbers=left,
+  stepnumber=1,
+  numbersep=6pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+}
+
+\definecolor{secBar}{HTML}{3E63FF}
+\definecolor{secText}{HTML}{1F2A44}
+\definecolor{secLine}{HTML}{B9C7FF}
+
+\newlength{\SecBadgeW}
+
+\newcommand{\SecLabel}{} % 見出し番号を一時保存
+
+\newcommand{\sectionB}[1]{%
+  \noindent
+  \begin{tikzpicture}[baseline=(T.base)]
+    % 左の縦バー
+    \fill[secBar, rounded corners=1pt] (0,-0.55ex) rectangle (2.2pt,2.6ex);
+
+    % 番号があるときだけ左にバッジ
+    \ifx\SecLabel\empty
+      \node[anchor=west, text=secText, font=\Large\bfseries, text width=\dimexpr\linewidth-8pt\relax] (T) at (8pt,0) {#1};
+    \else
+      \node[anchor=west, fill=secBar, text=white, rounded corners=2pt,
+            inner xsep=6pt, inner ysep=3pt, font=\Large\bfseries] (N)
+            at (8pt,0) {\SecLabel};
+      \node[anchor=west, text=secText, font=\Large\bfseries, text width=\dimexpr\linewidth-8pt\relax] (T)
+            at ([xshift=8pt]N.east) {#1};
+    \fi
+
+    % 下線（本文幅いっぱい）
+    \draw[secLine, line width=0.8pt] (0,-1.8ex) -- (\linewidth,-1.8ex);
+  \end{tikzpicture}%
+}
+
+% --- 番号付き section ---
+\titleformat{\section}[block]
+  {\normalfont}
+  {\global\edef\SecLabel{\thesection}} % ←ここで「2.1」を展開して固定
+  {0pt}
+  {\sectionB}
+
+\titlespacing*{\section}{0pt}{2.0ex plus .5ex}{1.2ex}
+
+% tcolorbox の箱コマンドを使う（環境は使わない）
+\DeclareRobustCommand{\sectionpinbox}[1]{%
+  \tcbox[
+    enhanced,
+    colback=sectionbg,
+    colframe=sectionbg,
+    boxrule=0pt,
+    arc=3pt,
+    boxsep=0pt,
+    left=18pt,        % ← ピン分の余白
+    right=8pt,
+    top=5pt,
+    bottom=5pt,
+    width=\linewidth,
+    overlay={%
+      % 左端にピン（丸＋針）を描画
+      \begin{tikzpicture}[remember picture,overlay]
+        % 位置：箱の左上を基準に少し内側
+        \coordinate (P) at ([xshift=9pt,yshift=-9pt]frame.north west);
+
+        % 針（斜め）
+        \draw[line width=0.7pt, draw=sectionpin]
+          (P) -- ++(7pt,-14pt);
+
+        % 針先（小さい点）
+        \fill[sectionpin] ([xshift=7pt,yshift=-14pt]P) circle (0.7pt);
+
+        % ピン頭（丸：少し立体風に二重）
+        \fill[sectionpin] (P) circle (4.0pt);
+        \fill[sectionpinhi] ([xshift=-1.2pt,yshift=1.2pt]P) circle (1.4pt);
+      \end{tikzpicture}%
+    },
+  ]{%
+    \color{sectionfg}\Large\bfseries
+    \thesection\hspace{0.8em}#1%
+  }%
+}
+
+% titlesec 設定（label は box の中で出すので空に）
+% \titleformat{\section}[block]
 %   {\normalfont}
 %   {}
 %   {0pt}
-%   {\chapterribbon}
+%   {\sectionpinbox}
 
-
-% \titleformat{\chapter}
-%   {\normalfont}
-%   {}
+% section 見出しの定義
+% \titleformat{\section}[block]
+%   {\normalfont\Large\bfseries} % 文字サイズ・太字
+%   {}                           % ラベルは sectionbox 内で出す
 %   {0pt}
-%   {%
-%     \vspace*{-1.0\baselineskip}%
-%     \begin{chapterbox}
-%       {\Huge\bfseries Chapter~\thechapter}\par
-%       \vspace{4pt}
-%       {\LARGE\bfseries #1}
-%     \end{chapterbox}
-%     \vspace{1.2\baselineskip}
-%   }
-
-% セクションの見せ方
-\titleformat{\section}
-  {\Large\bfseries\color{sectioncolor}}
-  {\thesection}
-  {20pt}{}
+%   {\sectionpinbox}
 
 % サブセクションの見せ方  
 \titleformat{\subsection}
@@ -393,7 +511,18 @@ Python本体とパッケージ管理ツールが導入されます。
 Pythonの良いところはデータを可視化するためのライブラリも充実していることです。特にグラフ描画などに\texttt{Matplotlib}が使われます。
 
 \subsection{動作確認}
-環境構築が成功しているかを確かめるために、Hello Worldを行います\footnote{説明するのは野暮ですが、プログラムが正しく動作するかを確かめるために、"Hello World"を標準出力させる文化があります。}。まずC++が動作するかをたしかめます。chapter1-1.cppはターミナルに"Hello World!"を標準出力させるプログラムです。以下のコマンドで実行することができます。
+環境構築が成功しているかを確かめるために、Hello Worldを行います\footnote{説明するのは野暮ですが、プログラムが正しく動作するかを確かめるために、"Hello World"を標準出力させる文化があります。}。まずC++が動作するかをたしかめます。chapter1-1.cppはターミナルに"Hello World!"を標準出力させるプログラムです。
+
+\begin{codebox}[chapter1-1.cpp]{C++}
+#include <iostream>
+
+int main(){
+    std::cout << "Hello World\n";
+    return 0;
+}
+\end{codebox}
+
+以下のコマンドで実行することができます。
 
 \begin{lstlisting}[style=terminal]
   $ g++ chapter1-1.cpp -o main
@@ -404,7 +533,8 @@ Pythonの良いところはデータを可視化するためのライブラリ�
 次にPython3の動作確認をします。Python3はファイルを作っても良いのですが、ターミナルから以下を直接うちこむことでも"Hello World"の出力を行うことができます。
 
 \begin{lstlisting}[style=terminal]
-   $ python3 -c 'import numpy, scipy, matplotlib; print("Hello World!")'
+  $ python3 -c 'import numpy, scipy, matplotlib;\ 
+   print("Hello World!")'
 \end{lstlisting}
 
 
@@ -492,11 +622,11 @@ zheevは入力で与えた行列を上書きするので、元のハミルトニ
 \subsection{コンパイルおよび実行}
 LAPACKは単体では動かず、内部でBLASも呼び出しています。したがって、C++でLAPACKを使う場合、リンク時にLAPACKとBLASを同時にリンクする必要があります。コンパイルは
 \begin{lstlisting}[style=terminal]
-  g++ chapter2-1.cpp -O2 -llapack -lblas -o main
+  $ g++ chapter2-1.cpp -O2 -llapack -lblas -o main
 \end{lstlisting}
 のように行います。無事コンパイルが終わると実行ファイル\texttt{main}が生成されるので、
 \begin{lstlisting}[style=terminal]
-  ./main
+  $ ./main
 \end{lstlisting}
 で実行できます。
 
@@ -551,11 +681,7 @@ Max residual norm2: 4.44957e-16
 次にFFTWを用いたフーリエ変換の解説に移ります。FFTWは高速フーリエ変換を行うためのライブラリです。大まか流れとしては、まずフーリエ変換したい配列を用意した後、\texttt{fftw_plan_*}のように用意されている関数でplanを作成し、\texttt{fftw_execute(plan)}でplan(フーリエ変換)を実行、その後planを破壊してメモリを開放する、という流れになります。フーリエ変換後にplanとメモリを開放することを忘れないようにしてください。
 
 \subsection{FFTWにおける型}
-FFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は
-\begin{lstlisting}[style=terminal]
-  typedef double fftw_complex[2];
-\end{lstlisting}
-のように定められています。\texttt{[0]}には実部が、\texttt{[1]}には虚部が対応しています。FFTWで扱う引数は、\texttt{std::complex<double>}を受け付けないので、FFTの際は複素数型に必ずfftw_complexを指定しましょう。
+FFTWを用いる際は、通常では見慣れない型がいくつか登場します。まずFFTWにおける複素数型は\texttt{typedef double fftw_complex[2]}のように定められています。\texttt{[0]}には実部が、\texttt{[1]}には虚部が対応しています。FFTWで扱う引数は、\texttt{std::complex<double>}を受け付けないので、FFTの際は複素数型に必ずfftw_complexを指定しましょう。
 
 次に、FFTWで要となる\texttt{fftw_plan}型についてです。この型の中身はユーザーからは見えないのですが、入力値や次元数、最適化の仕方やアルゴリズムなどが内部に保持されています。我々の行うことは、フーリエ変換のためのplanを作成し、それを\texttt{fftw_plan}で実行することです。
 
@@ -729,9 +855,9 @@ OpenMPはメモリ共有によって並列計算を行うためのAPIで、C++�
 もちろんすべてのプログラムが並列化可能なわけではありません。例えば、各for文の計算が非常に軽い場合はむしろ並列化のためのオーバーヘッドのほうが負荷になります。また各ループの計算が独立でない場合は意図しない結果をもたらしたり、そもそも並列化不可能であったりします。例えば漸化式のように、i番目の計算を出力するのにi-1番目の結果が必要になる場合は並列化を適用できません。
 
 \subsection{基本的な使い方}
-OpenMPはコンパイラが対応している必要がありますが、本稿で主に用いるg++ではデフォルトで使うことが出来ます。使用時はコンパイルオプションに-fopenmpを付ければよく、例えばコンパイル時に
+OpenMPはコンパイラが対応している必要がありますが、本稿で主に用いるg++ではデフォルトで使うことが出来ます。使用時はコンパイルオプションに-fopenmpを付ければよく、
 \begin{lstlisting}[style=terminal]
-  g++ -O2 -fopenmp main.cpp -o main
+  $ g++ -O2 -fopenmp main.cpp -o main
 \end{lstlisting}
 とします。
 
@@ -744,7 +870,7 @@ OpenMPはコンパイラが対応している必要がありますが、本稿�
 
 スレッド数は実行時に環境変数を指定すれば変更することが出来ます。例えば実行前に
 \begin{lstlisting}[style=terminal]
-export OMP_NUM_THREADS=4
+  $ export OMP_NUM_THREADS=4
 \end{lstlisting}
 とすれば、OpenMPは4スレッドで実行されます。
 
@@ -785,7 +911,7 @@ reductionの基本的な構文は\texttt{\#pragma omp parallel for reduction(ope
 
 \chapter{強束縛模型の解析}
 本稿では、物性理論における多くの解析の出発点として表れる強束縛模型の解析手法について述べますが、これまで述べたような対角化、フーリエ変換については一度おいておきます。のちに解説しますが、まずはバンド、フェルミ面、状態密度という基本的な解析対象について述べ、その実装方法について紹介します。
-\section{次近接ホッピングを導入した2次元正方格子の強束縛模型の構築}
+\section{2次元正方格子の強束縛模型の構築}
 まず2次元正方格子上のシングルバンドの強束縛模型を実空間で構成し、その後フーリエ変換でによって波数空間表示を導きます。格子定数は1とします。格子点は$\bm{R}_i = (x_i, y_i)$で表され、 $i$ 番目の格子に対しフェルミオンの生成・消滅演算子$c_i^\dagger, c_i$ を導入します。スピン添え字は省略します。
 
 正方格子における最近接ベクトルは
@@ -859,7 +985,7 @@ e^{i\bm{k}\cdot\bm{\delta}'}
 \right)
 c_{\bm{k}}^\dagger c_{\bm{k}}
 \end{equation}
-を得ます。特に正方格子では
+を得ます。特に最近接ホッピングのみ考慮した正方格子では
 \begin{equation}
 \sum_{\bm{\delta}}
 e^{i\bm{k}\cdot\bm{\delta}}
@@ -925,6 +1051,497 @@ $\Gamma = (0,0)$, $X = (\pi,0)$, $M = (0, \pi)$です。例えば縦軸にエネ
 
 さて、目標充填数$n_{target}$を与えたとき、化学ポテンシャル$\mu$は$n(\mu) - n_{target} = 0$の根として定義される。ここで一般に$n(\mu)$は$\mu$に関して単調に変化するので、二分探索によってこの解を求めることが出来る。
 
+\chapter{付録}
+
+\subsection{LAPACKを用いた対角化サンプルプログラム}
+
+\begin{codebox}[chapter2-1.cpp]{C++}
+#include <iostream>
+#include <vector>
+#include <complex>
+#include <stdexcept>
+#include <fstream>
+#include <cmath>
+#include <limits>
+
+using cd = std::complex<double>;
+
+extern "C" {
+
+void dsyevd_(
+    char* jobz, char* uplo,
+    int* n,
+    double* a, int* lda,
+    double* w,
+    double* work, int* lwork,
+    int* iwork, int* liwork,
+    int* info
+);
+
+void zheevd_(
+    char* jobz, char* uplo,
+    int* n,
+    cd* a, int* lda,
+    double* w,
+    cd* work, int* lwork,
+    double* rwork, int* lrwork,
+    int* iwork, int* liwork,
+    int* info
+);
+
+}
+
+template <class T>
+inline T& A(std::vector<T>& a, int i, int j, int n) {
+    return a[i + n * j];
+}
+template <class T>
+inline const T& A(const std::vector<T>& a, int i, int j, int n) {
+    return a[i + n * j];
+}
+
+double norm2(const std::vector<double>& x) {
+    long double s = 0.0L;
+    for (double v : x) s += (long double)v * (long double)v;
+    return std::sqrt((double)s);
+}
+double norm2(const std::vector<cd>& x) {
+    long double s = 0.0L;
+    for (cd v : x) s += (long double)std::norm(v);
+    return std::sqrt((double)s);
+}
+
+template <class T>
+double residual_norm2(const std::vector<T>& Aorig,
+                      const std::vector<T>& V,
+                      const std::vector<double>& w,
+                      int n, int j) {
+    std::vector<T> r(n, T{});
+    for (int i = 0; i < n; ++i) {
+        T sum = T{};
+        for (int k = 0; k < n; ++k) {
+            sum += A(Aorig, i, k, n) * A(V, k, j, n);
+        }
+        r[i] = sum - (T)w[j] * A(V, i, j, n);
+    }
+    return norm2(r);
+}
+
+void diagonalize_hermitian(std::vector<cd>& a, int n, std::vector<double>& w) {
+    w.assign(n, 0.0);
+
+    char jobz = 'V';
+    char uplo = 'U';
+    int lda = n;
+    int info = 0;
+
+    // Workspace query
+    int lwork = -1, lrwork = -1, liwork = -1;
+    cd work_query;
+    double rwork_query;
+    int iwork_query;
+
+    zheevd_(&jobz, &uplo, &n,
+            a.data(), &lda,
+            w.data(),
+            &work_query, &lwork,
+            &rwork_query, &lrwork,
+            &iwork_query, &liwork,
+            &info);
+
+    if (info != 0) {
+        throw std::runtime_error("zheevd workspace query failed, info=" + std::to_string(info));
+    }
+
+    lwork  = (int)std::max(1.0, std::floor(work_query.real()));
+    lrwork = (int)std::max(1.0, std::floor(rwork_query));
+    liwork = std::max(1, iwork_query);
+
+    std::vector<cd> work(lwork);
+    std::vector<double> rwork(lrwork);
+    std::vector<int> iwork(liwork);
+
+    // Actual computation
+    zheevd_(&jobz, &uplo, &n,
+            a.data(), &lda,
+            w.data(),
+            work.data(), &lwork,
+            rwork.data(), &lrwork,
+            iwork.data(), &liwork,
+            &info);
+
+    if (info != 0) {
+        throw std::runtime_error("zheevd failed, info=" + std::to_string(info));
+    }
+}
+
+std::vector<cd> build_example_hermitian_3x3(int& n_out) {
+    const int n = 3;
+    n_out = n;
+    std::vector<cd> H(n * n, cd{0.0, 0.0});
+
+    // H =
+    // [ 1.0, 0.2+0.1i, 0.0
+    //   0.2-0.1i, 2.0, 0.3
+    //   0.0, 0.3, 3.0 ]
+    A(H, 0, 0, n) = 1.0;
+    A(H, 1, 1, n) = 2.0;
+    A(H, 2, 2, n) = 3.0;
+
+    cd x = cd(0.2, 0.1);
+    A(H, 0, 1, n) = x;
+    A(H, 1, 0, n) = std::conj(x);
+
+    A(H, 1, 2, n) = 0.3;
+    A(H, 2, 1, n) = 0.3;
+
+    // (0,2) = 0
+    return H;
+}
+
+int main() {
+    try {
+        int n = 0;
+        std::vector<cd> H = build_example_hermitian_3x3(n);
+
+        std::vector<cd> Horig = H;
+
+        std::vector<double> w;
+        diagonalize_hermitian(H, n, w);
+
+        std::cout << "Eigenvalues (ascending):\n";
+        for (int i = 0; i < n; ++i) {
+            std::cout << "  w[" << i << "] = " << w[i] << "\n";
+        }
+
+        std::cout << "\nEigenvectors (columns):\n";
+        for (int j = 0; j < n; ++j) {
+            std::cout << "v[" << j << "] = ( ";
+            for (int i = 0; i < n; ++i) {
+                std::cout << A(H, i, j, n) << " ";
+            }
+            std::cout << ")\n";
+        }
+
+        double max_res = 0.0;
+        for (int j = 0; j < n; ++j) {
+            double rj = residual_norm2(Horig, H, w, n, j);
+            max_res = std::max(max_res, rj);
+        }
+        std::cout << "\nMax residual norm2: " << max_res << "\n";
+
+        {
+            std::ofstream ofs("eigvals.dat");
+            ofs << "# i  w[i]\n";
+            for (int i = 0; i < n; ++i) {
+                ofs << i << " " << w[i] << "\n";
+            }
+        }
+
+        {
+            std::ofstream ofs("eigvecs.dat");
+            ofs << "# columns are eigenvectors v_j; row i is component i\n";
+            for (int i = 0; i < n; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    cd v = A(H, i, j, n);
+                    ofs << v.real() << " " << v.imag();
+                    if (j + 1 < n) ofs << "   ";
+                }
+                ofs << "\n";
+            }
+        }
+
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return 1;
+    }
+}
+\end{codebox}
+
+\subsection{FFTWを用いた高速フーリエ変換サンプルプログラム}
+
+\begin{codebox}[chapter2-2.cpp]{C++}
+#include <fftw3.h>
+
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <limits>
+
+static inline int idx(int ix, int iy, int Ny) { return ix * Ny + iy; }
+
+int main(int argc, char** argv) {
+    int Nx = 128;
+    int Ny = 128;
+    double gamma = 6.0;
+
+    if (argc >= 3) {
+        Nx = std::atoi(argv[1]);
+        Ny = std::atoi(argv[2]);
+    }
+    if (argc >= 4) {
+        gamma = std::atof(argv[3]);
+    }
+    if (Nx <= 0 || Ny <= 0) {
+        std::cerr << "Nx, Ny must be positive.\n";
+        return 1;
+    }
+    if (gamma <= 0.0) {
+        std::cerr << "gamma must be positive.\n";
+        return 1;
+    }
+
+    fftw_complex* in  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * Nx * Ny);
+    fftw_complex* out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * Nx * Ny);
+    if (!in || !out) {
+        std::cerr << "fftw_malloc failed.\n";
+        fftw_free(in);
+        fftw_free(out);
+        return 1;
+    }
+
+    for (int ix = 0; ix < Nx; ++ix) {
+        const double x = ix - Nx / 2.0;  // 座標 : [-Nx/2, ..., Nx/2)
+        for (int iy = 0; iy < Ny; ++iy) {
+            const double y = iy - Ny / 2.0;
+
+            const double val = (gamma * gamma) / (x * x + y * y + gamma * gamma);
+
+            // シフトして(0,0)に中心を置く
+            const int ix0 = (ix + Nx / 2) % Nx;
+            const int iy0 = (iy + Ny / 2) % Ny;
+
+            in[idx(ix0, iy0, Ny)][0] = val;  // 実部
+            in[idx(ix0, iy0, Ny)][1] = 0.0;  // 虚部
+        }
+    }
+
+    // FFTW plan の作成及び実行
+    fftw_plan plan = fftw_plan_dft_2d(Nx, Ny, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    if (!plan) {
+        std::cerr << "fftw_plan_dft_2d failed\n";
+        fftw_free(in);
+        fftw_free(out);
+        return 1;
+    }
+    fftw_execute(plan);
+
+    {
+        std::ofstream ofs("lorentzian_real.dat");
+        ofs << "# x y f(x,y)\n";
+        for (int x = -Nx / 2; x < Nx / 2; ++x) {
+            // x に対応する元の ix
+            const int ix = x + Nx / 2;
+            for (int y = -Ny / 2; y < Ny / 2; ++y) {
+                const int iy = y + Ny / 2;
+
+                // in[] は前向きにシフトして格納したので、逆シフトで読む
+                const int ix0 = (ix + Nx / 2) % Nx;
+                const int iy0 = (iy + Ny / 2) % Ny;
+
+                ofs << x << " " << y << " " << in[idx(ix0, iy0, Ny)][0] << "\n";
+            }
+            ofs << "\n";
+        }
+    }
+
+    // ------------------------------------------------------------
+    // 3) k空間: FFTの結果と、連続変換の厳密解を「同じ格子点」で比較して出力
+    //
+    // FFTWの周波数:
+    //   kx = 2π * mx / Nx,   mx = -Nx/2..Nx/2-1（表示用）
+    //   ky = 2π * my / Ny
+    //
+    // 連続変換の厳密解（無限平面）:
+    //   f(r) = gamma^2/(r^2+gamma^2)
+    //   F(k) = 2π * gamma^2 * K0(gamma*|k|)
+    //
+    // 注意: k=0 は対数発散（無限大）なので比較不能。
+    //       ここでは NaN を出しておく（gnuplotで弾ける）
+    // ------------------------------------------------------------
+    {
+        std::ofstream ofs("lorentzian_k_fft_exact.dat");
+        ofs << "# mx my kx ky |F_fft| Re(F_fft) Im(F_fft) F_exact\n";
+
+        const double pi = M_PI;
+
+        for (int sx = 0; sx < Nx; ++sx) {
+            const int mx = sx - Nx / 2;                 // 表示用（fftshifted）
+            const int ix = (sx + Nx / 2) % Nx;          // 実際のFFTW index
+            const double kx = 2.0 * pi * mx / Nx;       // 物理波数（dx=1）
+
+            for (int sy = 0; sy < Ny; ++sy) {
+                const int my = sy - Ny / 2;
+                const int iy = (sy + Ny / 2) % Ny;
+                const double ky = 2.0 * pi * my / Ny;
+
+                const double re = out[idx(ix, iy, Ny)][0];
+                const double im = out[idx(ix, iy, Ny)][1];
+                const double mag = std::sqrt(re * re + im * im);
+
+                const double kabs = std::sqrt(kx * kx + ky * ky);
+
+                double exact;
+                if (kabs < 1e-14) {
+                    exact = std::numeric_limits<double>::quiet_NaN();  // 発散点はNaN
+                } else {
+                    exact = 2.0 * pi * gamma * gamma * std::cyl_bessel_k(0, gamma * kabs);
+                }
+
+                ofs << mx << " " << my << " "
+                    << kx << " " << ky << " "
+                    << mag << " " << re << " " << im << " "
+                    << exact << "\n";
+            }
+            ofs << "\n";
+        }
+    }
+
+    fftw_destroy_plan(plan);
+    fftw_free(in);
+    fftw_free(out);
+
+    std::cout << "Done.\n"
+              << "Outputs:\n"
+              << "  - lorentzian_real.dat\n"
+              << "  - lorentzian_k_fft_exact.dat\n";
+    return 0;
+}
+
+\end{codebox}
+
+\subsection{OpenMPによる並列計算サンプルプログラム}
+
+\begin{codebox}[chapter2-3.cpp]{C++}
+#include <iostream>
+#include <omp.h>
+
+int main() {
+#pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        int nthreads = omp_get_num_threads();
+        printf("thread %d / %d\n", tid, nthreads);
+    }
+    return 0;
+}
+\end{codebox}
+
+\begin{codebox}[chapter2-3-2.cpp]{C++}
+#include <iostream>
+#include <omp.h>
+
+int main() {
+#pragma omp parallel for
+    for (int i = 0; i < 8; ++i) {
+        printf("i = %d, thread = %d\n", i, omp_get_thread_num());
+    }
+}
+\end{codebox}
+
+\begin{codebox}[chapter2-3-3.cpp]{C++}
+#include <iostream>
+#include <omp.h>
+
+int main() {
+    int x = 0;
+
+#pragma omp parallel
+    {
+        x += 1;
+    }
+
+    std::cout << x << std::endl;
+}
+\end{codebox}
+
+\begin{codebox}[chapter2-3-4.cpp]{C++}
+#include <omp.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <iomanip>
+
+int main(int argc, char** argv) {
+    // 反復回数（十分大きい方が差が出やすい）
+    // 例: ./reduction_demo 50000000
+    long long N = 50'000'000LL;
+    if (argc >= 2) {
+        N = std::atoll(argv[1]);
+        if (N <= 0) {
+            std::cerr << "N must be positive.\n";
+            return 1;
+        }
+    }
+
+    // OpenMPのスレッド数（環境変数 OMP_NUM_THREADS が優先されるのが普通）
+    int max_threads = omp_get_max_threads();
+
+    std::cout << "N = " << N << "\n";
+    std::cout << "omp_get_max_threads() = " << max_threads << "\n";
+
+    // ---- (A) reduction なし：データ競合が起きる ----
+    long long sum_race = 0;
+    double t0 = omp_get_wtime();
+
+#pragma omp parallel for
+    for (long long i = 0; i < N; ++i) {
+        // 競合しやすい典型：共有変数に +=
+        sum_race += 1;
+    }
+
+    double t1 = omp_get_wtime();
+
+    // ---- (B) reduction あり：正しい ----
+    long long sum_reduction = 0;
+    double t2 = omp_get_wtime();
+
+#pragma omp parallel for reduction(+:sum_reduction)
+    for (long long i = 0; i < N; ++i) {
+        sum_reduction += 1;
+    }
+
+    double t3 = omp_get_wtime();
+
+    // ---- (C) 参考：atomic（正しいが遅くなりがち）----
+    long long sum_atomic = 0;
+    double t4 = omp_get_wtime();
+
+#pragma omp parallel for
+    for (long long i = 0; i < N; ++i) {
+#pragma omp atomic
+        sum_atomic += 1;
+    }
+
+    double t5 = omp_get_wtime();
+
+    // 期待値（逐次なら必ず N）
+    const long long expected = N;
+
+    std::cout << std::fixed << std::setprecision(6);
+
+    std::cout << "\n[No reduction (race)]\n";
+    std::cout << "  sum = " << sum_race << " (expected " << expected << ")\n";
+    std::cout << "  error = " << (expected - sum_race) << "\n";
+    std::cout << "  time = " << (t1 - t0) << " sec\n";
+
+    std::cout << "\n[Reduction]\n";
+    std::cout << "  sum = " << sum_reduction << " (expected " << expected << ")\n";
+    std::cout << "  error = " << (expected - sum_reduction) << "\n";
+    std::cout << "  time = " << (t3 - t2) << " sec\n";
+
+    std::cout << "\n[Atomic (reference)]\n";
+    std::cout << "  sum = " << sum_atomic << " (expected " << expected << ")\n";
+    std::cout << "  error = " << (expected - sum_atomic) << "\n";
+    std::cout << "  time = " << (t5 - t4) << " sec\n";
+
+    std::cout << "\nTip: run multiple times; the 'race' result often changes.\n";
+    return 0;
+}
+\end{codebox}
 
 \begin{thebibliography}{9}
   % \bibitem{hofstadter} Hofstadter, Douglas R., Energy levels and wave functions of Bloch electrons in rational and irrational magnetic fields, Phys. Rev. B $\bm{14}$, 2239(1976).

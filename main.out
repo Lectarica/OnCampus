@@ -33,8 +33,12 @@
 \BOOKMARK [2][-]{subsection.2.4.4}{OpenMPにおける変数の扱い\(shared/private\)}{section.2.4}% 33
 \BOOKMARK [2][-]{subsection.2.4.5}{reduction}{section.2.4}% 34
 \BOOKMARK [0][-]{chapter.3}{強束縛模型の解析}{}% 35
-\BOOKMARK [1][-]{section.3.1}{次近接ホッピングを導入した2次元正方格子の強束縛模型の構築}{chapter.3}% 36
+\BOOKMARK [1][-]{section.3.1}{2次元正方格子の強束縛模型の構築}{chapter.3}% 36
 \BOOKMARK [1][-]{section.3.2}{バンド図とフェルミ面}{chapter.3}% 37
 \BOOKMARK [2][-]{subsection.3.2.1}{バンド図の描画}{section.3.2}% 38
 \BOOKMARK [2][-]{subsection.3.2.2}{フェルミ面の描画}{section.3.2}% 39
 \BOOKMARK [2][-]{subsection.3.2.3}{化学ポテンシャルの自己無撞着な決定}{section.3.2}% 40
+\BOOKMARK [0][-]{chapter.4}{付録}{}% 41
+\BOOKMARK [1][-]{subsection.4.0.1}{LAPACKを用いた対角化サンプルプログラム}{chapter.4}% 42
+\BOOKMARK [2][-]{subsection.4.0.2}{FFTWを用いた高速フーリエ変換サンプルプログラム}{subsection.4.0.1}% 43
+\BOOKMARK [2][-]{subsection.4.0.3}{OpenMPによる並列計算サンプルプログラム}{subsection.4.0.1}% 44
