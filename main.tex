@@ -362,18 +362,42 @@ BLASはベクトルおよび行列に対する基本的な演算を提供する�
 \section{計算環境の準備}
 数値計算に使うツールの概観を終えたので、次に環境構築に移ります。本稿ではWindows Subsystem for Linux(WSL)を導入して、仮想環境を構築します。理由の第一は筆者が使い慣れているために詳細が説明できることですが、他の利点としては、ソースコードの編集やコンパイル、実行、結果の整理といった一連の作業をコマンドラインで容易に行うことができる点があります。このような開発を\textbf{CUIベース}といいます。パラメータを変えながらプログラムを連続して走らせたりする場面では、シェルスクリプトやMakefileを用いた自動化も用いられ、その際はCUI前提の環境の方が圧倒的に相性が良いです。また物性研の計算サーバー(ohtaka, kugui)や東大情報基盤センターのWisteriaなどを利用する際はリモート接続によるCUIの操作が基本となります。そのため、CUIに慣れておくことは研究を継続するうえでも大切になるでしょう。
 
-PCを購入するとき、最初からOSがLinuxになっていることは少なく、WindowsかMacであることが多いと思います。WSLを用いると、Windows上に仮想的なLinux環境を導入することで、Linuxと同様の感覚でプログラムを開発・実行することが出来ます。これによりWindowsを日常的に使いながら、研究で必要なLinux環境を整えることが出来ます。またVisual Studio CodeのRemoteと組み合わせることで、エディタをWindows側で動かしつつ、実際のコンパイルや実行をLinux側で行うというある種分業的な使い方が出来ます。
+PCが支給されるとき、最初からOSがLinuxになっていることは少なく、WindowsかMacであることが多いと思います。WSLを用いると、Windows上に仮想的なLinux環境を導入することで、Linuxと同様の感覚でプログラムを開発・実行することが出来ます。これによりWindowsを日常的に使いながら、研究で必要なLinux環境を整えることが出来ます。またVisual Studio CodeのRemoteと組み合わせることで、エディタをWindows側で動かしつつ、実際のコンパイルや実行をLinux側で行うというある種分業的な使い方が出来ます。
 
 \subsection{WSLの有効化}
-WSLの導入はPowershellから行います。まずスタートメニューからPowershellと検索し、管理者として実行を選択して起動します。起動後、以下のコマンドを入力します。
+WSLの導入はPowershellから行います。まずスタートメニューからPowershellと検索し、\textbf{管理者として実行}を選択して起動します\footnote{何もせずクリックするとユーザー権限で開かれ、wslが有効にならないことに注意。}。
+\begin{figure}[t] % 位置: t=top, b=bottom, h=here(強くは効かない), p=page
+  \centering
+  \includegraphics[width=0.95\linewidth]{Oncampus-Fig1_v1.eps}
+  \caption{スタートメニューからPowershellと検索するとこのような画面が出てきます。}
+  \label{fig:chiRPA}
+\end{figure}
+起動後、以下のコマンドを入力します。
 \begin{lstlisting}[style=terminal]
  $ wsl --install
 \end{lstlisting}
 このコマンドを実行すると、WSL本体が有効化およびLinuxディストリビューションのインストールが自動的に開始されます。\footnote{インストール途中で再起動を求められる場合があります。}
 
-WSLの導入が完了すると、スタートメニューからUbuntuと検索することで、Linux環境を起動することが出来ます。Ubuntuの初回起動画面ではユーザー名およびパスワードの設定を求められます。ここで設定したユーザー名とパスワードは、管理者権限を使用するときに必要となるため、忘れないようにしてください。
+ここで一度\texttt{wsl -l -v}を実行してみます。デフォルトではUbuntuの最新バージョンが入っていると思われますが、もしそのほかのバージョンやディストリビューションを指定してインストールしたければ、
+\begin{lstlisting}[style=terminal]
+$ wsl --list --online
+\end{lstlisting}
+でディストリビューションの一覧を確認し、
+\begin{lstlisting}[style=terminal]
+$ wsl --install -d <Distro>
+\end{lstlisting}
+で好みのものをインストールしてください。以下ではUbutnuを導入した場合を仮定します。
 
-設定が一通り終わると黒い画面のターミナルが表示されるので、コマンド入力が可能な状態になります。まずパッケージ管理システムを最新の状態に更新する必要があるので、ターミナル上で
+WSLの導入が完了すると、スタートメニューからUbuntuと検索することで、Linux環境を起動することが出来ます\footnote{あるいは、Powershellから \texttt{wsl}と打ち込むことでも起動できます。}。Ubuntuの初回起動画面ではユーザー名およびパスワードの設定を求められます。ここで設定したユーザー名とパスワードは、管理者権限を使用するときに必要となるため、忘れないようにしてください。
+\begin{figure}[t] % 位置: t=top, b=bottom, h=here(強くは効かない), p=page
+  \centering
+  \includegraphics[width=0.95\linewidth]{Oncampus-Fig2.eps}
+  \caption{WSLの導入に成功した場合、スタートメニューからUbuntuと検索するとこのような画面が出てきます。}
+  \label{fig:chiRPA}
+\end{figure}
+設定が一通り終わると黒い画面のターミナルが表示されるので、コマンド入力が可能な状態になります。以降はPowershellではなく、bashと呼ばれるLinux環境のターミナルを用います。
+
+まずパッケージ管理システムを最新の状態に更新する必要があるので、ターミナル上で
 \begin{lstlisting}[style=terminal]
   $ sudo apt update
    sudo apt upgrade
@@ -381,10 +405,10 @@ WSLの導入が完了すると、スタートメニューからUbuntuと検索�
 を実行してください。\texttt{sudo}とは、管理者権限でコマンドを実行するための命令で、実行時には設定したパスワードの入力のみが求められます。
 
 \subsection{Visual Studio Codeの導入}
-次にプログラムの編集および開発に用いるエディタとして、Visual Studio Code(VSCode)を導入します。VSCodeは軽量で拡張性が高いこと、またRemoteによりWSL環境との連携も容易であるために、本稿では標準的な開発環境として採用します。\footnote{sshなどで大学のスパコンを用いる場合、標準装備されているエディタがemacsである場合もあります。}
-ここで重要なのが、VSCodeはWindows側にインストールするということです。WSLからsudo apt install codeしてエディタを導入することもできますが、Windows上で動作するVSCodeからLinux環境に接続することで安定した開発環境を構築できます。
+次にプログラムの編集および開発に用いるエディタとして、Visual Studio Code(VS Code)を導入します。VS Codeは軽量で拡張性が高いこと、またRemoteによりWSL環境との連携も容易であるために、本稿では標準的な開発環境として採用します。\footnote{sshなどで大学のスパコンを用いる場合、標準装備されているエディタがemacsである場合もあります。}
+ここで重要なのが、VS CodeはWindows側にインストールするということです。WSLからsudo apt install codeしてエディタを導入することもできますが、Windows上で動作するVS CodeからLinux環境に接続することで安定した開発環境を構築できます。
 
-まず、公式サイトからVSCodeをダウンロードします。
+まず、公式サイトからVS Codeをダウンロードします。
 
 \myurl{https://code.visualstudio.com/}
 
@@ -392,27 +416,27 @@ WSLの導入が完了すると、スタートメニューからUbuntuと検索�
 \begin{itemize}
   \item PATHに環境変数を追加する
 \end{itemize}
-にチェックをしてください。コマンドラインからVSCodeを起動できるようにするために必要です。
+にチェックをしてください。コマンドラインからVS Codeを起動できるようにするために必要です。
 
 
-インストールが完了したら、スタートメニューからVSCodeを起動します。正常に起動するとエディタ画面が表示されると思います。VSCodeが正しくインストールされていることを確認するためには、Windows側のPowershellまたはコマンドプロンプトを開いて、
+インストールが完了したら、スタートメニューからVS Codeを起動します。正常に起動するとエディタ画面が表示されると思います。VS Codeが正しくインストールされていることを確認するためには、Windows側のPowershellまたはコマンドプロンプトを開いて、
 \begin{lstlisting}[style=terminal]
   $ code --version
 \end{lstlisting}
-を入力します。バージョン番号が表示されればVSCodeの導入は正常に完了しています。
+を入力します。バージョン番号が表示されればVS Codeの導入は正常に完了しています。
 
-次にVSCodeのRemote - WSLを用いて、Windows上のエディタからLinux環境へ接続する方法について説明します。Remote - WSLはVSCodeからWSL上のLinux環境に直接アクセスし、ソースコードの編集・実行・デバッグを行うための拡張機能です。これにより、エディタはWindowsで動作しつつ、実際の開発環境をLinuxで行うという環境が実現します。
+次にVS CodeのRemote - WSLを用いて、Windows上のエディタからLinux環境へ接続する方法について説明します。Remote - WSLはVS CodeからWSL上のLinux環境に直接アクセスし、ソースコードの編集・実行・デバッグを行うための拡張機能です。これにより、エディタはWindowsで動作しつつ、実際の開発環境をLinuxで行うという環境が実現します。
 
-まずVSCodeを起動し、左側のメニューから「拡張機能(Extensions)」アイコンを選択します。検索欄にRemote WSLと入力すると、拡張機能が表示されるのでこれをインストールします。\footnote{コマンドパレットを用いてインストールすることもできます。VSCode上で\texttt{ctrl+Shift+P}を押し、Extensions:install Extenstions と入力して検索を書けることもできます。}
+まずVS Codeを起動し、左側のメニューから「拡張機能(Extensions)」アイコンを選択します。検索欄にRemote WSLと入力すると、拡張機能が表示されるのでこれをインストールします。\footnote{コマンドパレットを用いてインストールすることもできます。VS Code上で\texttt{ctrl+Shift+P}を押し、Extensions:install Extenstions と入力して検索を書けることもできます。}
 
-次にUbuntuのターミナルからVSCodeを起動します。Ubuntuを起動して任意の作業ディレクトリに移動した後、以下を実行します。
+次にUbuntuのターミナルからVS Codeを起動します。Ubuntuを起動して任意の作業ディレクトリに移動した後、以下を実行します。
 
 \begin{lstlisting}[style=terminal]
   $ code .
 \end{lstlisting}
-. は現在いるディレクトリを指し、ここでcodeを実行するという意味です。このコマンドを実行することでVSCodeが起動し、現在のディレクトリがワークスペースとして開かれます。同時に画面左下に「WSL : Ubuntu」と表示され、Linux環境に接続されていることが確認できます。この状態ではVSCodeで編集しているファイルはすべてWSL側のLinuxファイルシステム上に存在していて、コンパイルや実行もLinuxの環境で行われます。\footnote{画面左下にWSL : Ubuntuと表示されていない場合は、左下の緑色のアイコンをクリックして「Connect to WSL」を選択してください。}
+. は現在いるディレクトリを指し、ここでcodeを実行するという意味です。このコマンドを実行することでVS Codeが起動し、現在のディレクトリがワークスペースとして開かれます。同時に画面左下に「WSL : Ubuntu」と表示され、Linux環境に接続されていることが確認できます。この状態ではVS Codeで編集しているファイルはすべてWSL側のLinuxファイルシステム上に存在していて、コンパイルや実行もLinuxの環境で行われます。\footnote{画面左下にWSL : Ubuntuと表示されていない場合は、左下の緑色のアイコンをクリックして「Connect to WSL」を選択してください。}
 
-VSCodeにはターミナルが内蔵されていますが、WSLに接続された状態でVS COdeを開くと、内蔵ターミナルもLinux環境として動作します。VS Code上で\texttt{Ctrl + '}を押すとターミナルが開きます。ここで表示されるシェルがUbuntuのbashになっていれば正しく接続されています。\footnote{内臓ターミナルはエディタ内で開発を完結させることが出来て便利ですが、ログが見にくくなったりする欠点もあります。必要に応じて使い分けてください。}
+VS Codeにはターミナルが内蔵されていますが、WSLに接続された状態でVS COdeを開くと、内蔵ターミナルもLinux環境として動作します。VS Code上で\texttt{Ctrl + '}を押すとターミナルが開きます。ここで表示されるシェルがUbuntuのbashになっていれば正しく接続されています。\footnote{内臓ターミナルはエディタ内で開発を完結させることが出来て便利ですが、ログが見にくくなったりする欠点もあります。必要に応じて使い分けてください。}
 
 \subsection{ファイル操作のコマンド}
 \begin{table}[H]
@@ -455,14 +479,14 @@ cp &
 \hline
 
 mv &
-ファイルを移動する，または名前変更する（実体は同じ）。
-\texttt{mv old new} がリネームとして頻出。 \\
+ファイルの移動または名前変更を行う。
+\texttt{mv old new} で名前変更。 \\
 \hline
 
 rm  &
 ファイルを削除する。
-\texttt{rm -r} はディレクトリ削除，\texttt{rm -i} は確認。
-\textbf{復元が基本できない}ので慎重に使う。 \\
+\texttt{rm -r} でディレクトリ削除
+\textbf{復元が基本できない}ので慎重に使う。\footnote{rmは使わないという人すらいます。} \\
 \hline
 
 cat &
@@ -472,7 +496,7 @@ cat &
 
 less  &
 長いファイルをページング表示する。
-\texttt{/} で検索，\texttt{q} で終了。ログ閲覧の必須。 \\
+\texttt{/} で検索，\texttt{q} で終了。 \\
 \hline
 
 find  &
@@ -540,12 +564,49 @@ int main(){
 
 \chapter{C++による数値計算の基礎}
 
-\section{コンパイル}
+\section{コンパイルおよびMakefileの作成}
+1章にもあったように、最もシンプルなコンパイル方法は
+\begin{lstlisting}[style=terminal]
+  $ g++ chapter1-1.cpp -o main
+   ./main
+\end{lstlisting}
+です。ここではchapter1-1.cppが入力ファイル、-oの後に指定しているものが出力ファイルの名前です。このようにCやC++のプログラムのコンパイルは通常ソースファイルと出力ファイルの名前を指定するだけでよいのですが、FFTW3やLAPACK/BLASといった外部のライブラリを利用する際には、コンパイル時にオプションを指定する必要があります。
 
+blasを利用したプログラムをコンパイルしたい場合は
+\begin{lstlisting}[style=terminal]
+  $ g++ main.cpp -O3 -lopenblas -o main
+\end{lstlisting}
+のように扱います。ただし物性研のスパコンなどを使う場合はIntel MKL環境がblasをサポートしているので
+\begin{lstlisting}[style=terminal]
+  $ icpc main.cpp -O3 -qmkl -o main
+\end{lstlisting}
+のように入力します。
+
+ここで-O オプションは最適化のレベルを指定するオプションで、-O0, -O1, -O2, -03といった種類があります。末尾の数字が大きいほど最適化のレベルが高くなる一方で、コンパイルするためのRAMが増大する側面もあります。\footnote{基本的に-O3を使えばよいですが、コンパイルが通らなくなる場合は-O0を使います。それでも通らない場合はファイルを分割するなどの工夫が必要になります。}
+
+FFTWを利用したプログラムをコンパイルしたい場合は
+\begin{lstlisting}[style=terminal]
+$ g++ main.cpp -O3 -lfftw3 -lm -o main  
+\end{lstlisting}
+とします。ただしFFTを並列計算で扱う場合は新たに追加で-lfftw3_ompも必要です。
+
+OpenMPを用いる場合は-fopenMPをオプションに付加すればよいです。これらを複合的に用いる場合は、コンパイル時にまとめてオプションを付けます。例えば
+
+\begin{lstlisting}[style=terminal]
+  $ g++ main.cpp \
+  -O3 \
+  -fopenmp \
+  -lfftw3_omp \
+  -lfftw3 \
+  -lopenblas \
+  -lm \
+  -o main
+\end{lstlisting}
+のようにします。
 
 \section{C++による対角化}
 本節では、C++からLAPACKを呼び出してエルミート行列を対角化するための手順をまとめます。複素行列を扱うか実対称行列を扱うかで用いるLAPACKのルーチンが異なる点にも注意すべきですが、呼び出し自体は数行で済みます。
-対角化には、エルミート行列を対角化するzheevか、dsyevを用います。LAPACKはもともとFortranで用いられていたライブラリであるため、column-majorでメモリの連続領域に格納されています。そこでC++ではs\texttt{td::vector<std::complex<double>>}を用いることで、要素$H_{ij}$に$H[i + N*j]$としてアクセスすることにします。
+対角化には、エルミート行列を対角化するzheevか、dsyevを用います。LAPACKはもともとFortranで用いられていたライブラリであるため、column-majorでメモリの連続領域に格納されています。そこでC++では\texttt{std::vector<std::complex<double>>}を用いることで、要素$H_{ij}$に$H[i + N*j]$としてアクセスすることにします。
 
 サンプルプログラムは\textbf{chapter2-1.cpp}です。
 
@@ -577,7 +638,7 @@ uplo & char &
 
 n & int &
 対角化する行列のサイズ。
-$3\times3$ 行列の場合は 3 を指定する。 \\
+$n\times n$ 行列の場合は n を指定する。 \\
 \hline
 
 a & std::vector$<$complex$<$double$>>$ &
@@ -687,10 +748,10 @@ FFTWを用いる際は、通常では見慣れない型がいくつか登場し�
 
 \subsection{planとは何か}
 FFTWでFFTを実行する場合は、\texttt{fftw_plan}型を持つ変数planを用意します。例えば2次元DFTを複素関数から複素関数に対して与える場合は
-\begin{lstlisting}[style=terminal]
+\begin{codebox}{c++}
 fftw_plan plan = fftw_plan_dft_2d(...);
 fftw_execute(plan);  
-\end{lstlisting}
+\end{codebox}
 のように実行します。ここでplanは次の情報を内部で保持しています。
 \begin{itemize}
   \item 変換の次元 : 1次元、2次元、3次元、あるいは4次元以上
@@ -909,6 +970,26 @@ reductionは各スレッドにprivateな変数を用意して、その変数を�
 
 reductionの基本的な構文は\texttt{\#pragma omp parallel for reduction(operator : variable)}で与えられます。例えば、変数Xに何かの総和を記録するときは、\texttt{\#pragma omp parallel for reduction(+ : X)}とします。
 
+\begin{lstlisting}[style=terminal]
+N = 50000000
+omp_get_max_threads() = 16
+
+[No reduction (race)]
+  sum = 7068296 (expected 50000000)
+  error = 42931704
+  time = 0.120810 sec
+
+[Reduction]
+  sum = 50000000 (expected 50000000)
+  error = 0
+  time = 0.002700 sec
+
+[Atomic (reference)]
+  sum = 50000000 (expected 50000000)
+  error = 0
+  time = 0.814223 sec  
+\end{lstlisting}
+
 \chapter{強束縛模型の解析}
 本稿では、物性理論における多くの解析の出発点として表れる強束縛模型の解析手法について述べますが、これまで述べたような対角化、フーリエ変換については一度おいておきます。のちに解説しますが、まずはバンド、フェルミ面、状態密度という基本的な解析対象について述べ、その実装方法について紹介します。
 \section{2次元正方格子の強束縛模型の構築}
@@ -932,16 +1013,25 @@ c_i^\dagger c_{i+\bm{\delta}}
 c_i^\dagger c_{i+\bm{\delta}'}
 - \mu \sum_i c_i^\dagger c_i
 \end{equation}
-と書けます。ここで実空間と波数空間の演算子の関係を
+と書けます。
+
+\begin{figure}[t] % 位置: t=top, b=bottom, h=here(強くは効かない), p=page
+  \centering
+  \includegraphics[width=0.95\linewidth]{Fig-tightbinding.eps}
+  \caption{正方格子の模式図。$t$が最近接ホッピングを、$t'$が次近接ホッピングを表す。格子定数は$a = 1$としている。}
+  \label{fig:chiRPA}
+\end{figure}
+
+ここで実空間と波数空間の演算子の関係を
 \begin{align}
 c_i
 &=
 \frac{1}{\sqrt{N}}
 \sum_{\bm{k}}
 e^{i\bm{k}\cdot\bm{R}_i}
-c_{\bm{k}}, \\
+c_{\bm{k}}, \qquad
 c_i^\dagger
-&=
+=
 \frac{1}{\sqrt{N}}
 \sum_{\bm{k}}
 e^{-i\bm{k}\cdot\bm{R}_i}
@@ -1041,15 +1131,15 @@ $\Gamma = (0,0)$, $X = (\pi,0)$, $M = (0, \pi)$です。例えば縦軸にエネ
 フェルミ面を数値的に求める手順は、大まかには次の通りです。エネルギー分散は数値計算で離散的に求められますが、各点を線形補完し、$\varepsilon(\bm{k}_i)$と$\varepsilon(\bm{k}_{i+1})$とで符号が反転する箇所を取り出します。このようにして得られたフェルミ面はあくまで点の集合ですが、メッシュサイズを十分細かくすることによって視覚的には滑らかなフェルミ面として扱うことができます。
 
 \subsection{化学ポテンシャル$\mu$の自己無撞着な決定}
-エネルギー分散$\varepsilon(k)$が与えられたとき、温度$T$における粒子数$n$は化学ポテンシャル$\mu$の関数として定まる。したがって、充填数(filling)$n$を指定したときの化学ポテンシャル$\mu$を計算で求めたいという場面が表れる。そこで、目標とする$N$に対して$n(\mu) = N$を満たす$\mu$を自己無撞着に求めてみる。
+エネルギー分散$\varepsilon(k)$が与えられたとき、温度$T$における粒子数$n$は化学ポテンシャル$\mu$の関数として定まる。したがって、充填数(filling)$n$を指定したときの化学ポテンシャル$\mu$を計算で求めたいという場面が表れる。そこで、目標とする$N$に対して$n(\mu) = N$を満たす$\mu$を自己無撞着に求めてみましょう。
 
-まず各$\bm{k}$の状態にある電子数は$\langle n_{\bm{k}} \rangle = f(\varepsilon(\bm{k}) - \mu)$で与えられる。ここで
+まず各$\bm{k}$の状態にある電子数は$\langle n_{\bm{k}} \rangle = f(\varepsilon(\bm{k}) - \mu)$で与えられます。ここで
 \begin{equation}
   f(x) = \frac{1}{e^{\beta x} + 1} \qquad \beta = \frac{1}{T}
 \end{equation}
-である。スピン縮退を考えなければfillingは$0$から$1$までの値を取る。1サイトあたりの粒子数は、$\frac{1}{N} \sum_{\bm{k}} \langle n_{\bm{k}} \rangle = \frac{1}{N}\sum_{\bm{k}}f(\varepsilon(\bm{k}) - \mu)$で求まる。
+です。スピン縮退を考えなければfillingは$0$から$1$までの値を取ります。1サイトあたりの粒子数は、$\frac{1}{N} \sum_{\bm{k}} \langle n_{\bm{k}} \rangle = \frac{1}{N}\sum_{\bm{k}}f(\varepsilon(\bm{k}) - \mu)$で求まります。
 
-さて、目標充填数$n_{target}$を与えたとき、化学ポテンシャル$\mu$は$n(\mu) - n_{target} = 0$の根として定義される。ここで一般に$n(\mu)$は$\mu$に関して単調に変化するので、二分探索によってこの解を求めることが出来る。
+さて、目標充填数$n_{target}$を与えたとき、化学ポテンシャル$\mu$は$n(\mu) - n_{target} = 0$の根として定義されます。ここで一般に$n(\mu)$は$\mu$に関して単調に変化するので、二分探索によってこの解を求めることが出来ます。
 
 \chapter{付録}
 
@@ -1539,6 +1629,450 @@ int main(int argc, char** argv) {
     std::cout << "  time = " << (t5 - t4) << " sec\n";
 
     std::cout << "\nTip: run multiple times; the 'race' result often changes.\n";
+    return 0;
+}
+\end{codebox}
+
+\begin{codebox}[chapter3.cpp]{C++}
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <omp.h>
+
+static constexpr double PI = 3.1415926535897932384626433832795;
+
+struct KPoint { double kx, ky; };
+
+// ---------- model dispersion (without mu) ----------
+static inline double eps_k(double kx, double ky, double t, double tp){
+    return -2.0*t*(std::cos(kx) + std::cos(ky))
+           -4.0*tp*(std::cos(kx)*std::cos(ky));
+}
+
+// ---------- stable fermi function f(x)=1/(e^x+1) ----------
+static inline double fermi(double x){
+    if (x >  50.0) return 0.0;
+    if (x < -50.0) return 1.0;
+    return 1.0 / (std::exp(x) + 1.0);
+}
+
+// centered k in (-pi, pi)
+static inline double k_centered(int i, int Nk){
+    return 2.0*PI*( (i + 0.5)/double(Nk) - 0.5 );
+}
+
+// ---------- estimate band edges (parallel) ----------
+static void estimate_band_edges(double t, double tp, int Nk_edge, double &emin, double &emax){
+    double loc_min = +1e300;
+    double loc_max = -1e300;
+
+#pragma omp parallel
+    {
+        double tmin = +1e300;
+        double tmax = -1e300;
+
+#pragma omp for collapse(2) nowait
+        for(int iy=0; iy<Nk_edge; ++iy){
+            for(int ix=0; ix<Nk_edge; ++ix){
+                const double ky = k_centered(iy, Nk_edge);
+                const double kx = k_centered(ix, Nk_edge);
+                const double e  = eps_k(kx, ky, t, tp);
+                if(e < tmin) tmin = e;
+                if(e > tmax) tmax = e;
+            }
+        }
+
+#pragma omp critical
+        {
+            if(tmin < loc_min) loc_min = tmin;
+            if(tmax > loc_max) loc_max = tmax;
+        }
+    }
+
+    emin = loc_min;
+    emax = loc_max;
+}
+
+// ---------- filling n(mu) per site (spinful g=2) ----------
+static double filling_n(double mu, double t, double tp, double T, int Nk, int g=2){
+    const double beta = (T > 0.0) ? (1.0/T) : std::numeric_limits<double>::infinity();
+    double sum = 0.0;
+
+#pragma omp parallel for collapse(2) reduction(+:sum)
+    for(int iy=0; iy<Nk; ++iy){
+        for(int ix=0; ix<Nk; ++ix){
+            const double ky = k_centered(iy, Nk);
+            const double kx = k_centered(ix, Nk);
+            const double e  = eps_k(kx, ky, t, tp);
+            if(T > 0.0) sum += fermi(beta*(e - mu));
+            else        sum += (e < mu) ? 1.0 : 0.0;
+        }
+    }
+
+    return double(g) * sum / (double(Nk)*double(Nk));
+}
+
+// ---------- solve mu for target filling by bisection ----------
+static double solve_mu_bisect(double n_target, double t, double tp, double T, int Nk,
+                              int g=2, double tol_n=1e-10, int max_iter=200){
+    if(n_target < 0.0 || n_target > double(g)){
+        throw std::runtime_error("n_target out of range. For spinful g=2: n in [0,2].");
+    }
+
+    double emin, emax;
+    estimate_band_edges(t, tp, 700, emin, emax);
+
+    const double pad = (T > 0.0) ? (20.0*T) : 5.0;
+    double mu_lo = emin - pad;
+    double mu_hi = emax + pad;
+
+    double n_lo = filling_n(mu_lo, t, tp, T, Nk, g);
+    double n_hi = filling_n(mu_hi, t, tp, T, Nk, g);
+
+    int widen = 0;
+    while((n_lo > n_target || n_hi < n_target) && widen < 25){
+        mu_lo -= 2.0*pad;
+        mu_hi += 2.0*pad;
+        n_lo = filling_n(mu_lo, t, tp, T, Nk, g);
+        n_hi = filling_n(mu_hi, t, tp, T, Nk, g);
+        widen++;
+    }
+    if(n_lo > n_target || n_hi < n_target){
+        throw std::runtime_error("Failed to bracket mu. Try larger Nk or T>0.");
+    }
+
+    double mu_mid = 0.0;
+    for(int it=0; it<max_iter; ++it){
+        mu_mid = 0.5*(mu_lo + mu_hi);
+        const double n_mid = filling_n(mu_mid, t, tp, T, Nk, g);
+        const double err = n_mid - n_target;
+        if(std::abs(err) < tol_n) return mu_mid;
+
+        if(n_mid < n_target) mu_lo = mu_mid;
+        else                 mu_hi = mu_mid;
+    }
+    return mu_mid;
+}
+
+// ---------- high-symmetry path Γ->X->M->Γ ----------
+static std::vector<KPoint> make_path(int nseg){
+    std::vector<KPoint> pts;
+    pts.reserve(3*nseg + 1);
+    auto add_seg = [&](KPoint a, KPoint b){
+        for(int i=0;i<nseg;i++){
+            const double s = double(i)/double(nseg);
+            pts.push_back({a.kx*(1.0-s)+b.kx*s, a.ky*(1.0-s)+b.ky*s});
+        }
+    };
+    const KPoint G{0.0,0.0}, X{PI,0.0}, M{PI,PI};
+    add_seg(G,X);
+    add_seg(X,M);
+    add_seg(M,G);
+    pts.push_back(G);
+    return pts;
+}
+
+static inline double lerp_zero(double a, double b){
+    const double denom = (b-a);
+    if(std::abs(denom) < 1e-14) return 0.5;
+    return -a/denom;
+}
+
+static std::string tag_num(double x){
+    std::ostringstream ss;
+    ss<<std::fixed<<std::setprecision(4)<<x;
+    std::string s=ss.str();
+    for(char& c: s){
+        if(c=='.') c='p';
+        if(c=='-') c='m';
+    }
+    return s;
+}
+
+// ---------- DOS with Gaussian broadening (parallel, thread-local accumulate) ----------
+static void compute_dos_gaussian(double t, double tp, int Nk, int g,
+                                 int nE, double eta,
+                                 const std::string& dos_dat){
+    double emin, emax;
+    estimate_band_edges(t, tp, 900, emin, emax);
+
+    const double Epad = 6.0*eta;
+    const double E0 = emin - Epad;
+    const double E1 = emax + Epad;
+    const double dE = (E1 - E0) / double(nE-1);
+
+    std::vector<double> dos(nE, 0.0);
+    const double norm_gauss = 1.0 / (std::sqrt(2.0*PI) * eta);
+
+    const int nthreads = omp_get_max_threads();
+    std::vector<std::vector<double>> dos_local(nthreads, std::vector<double>(nE, 0.0));
+
+#pragma omp parallel
+    {
+        const int tid = omp_get_thread_num();
+        auto &buf = dos_local[tid];
+
+#pragma omp for collapse(2) nowait
+        for(int iy=0; iy<Nk; ++iy){
+            for(int ix=0; ix<Nk; ++ix){
+                const double ky = k_centered(iy, Nk);
+                const double kx = k_centered(ix, Nk);
+                const double e  = eps_k(kx, ky, t, tp);
+
+                // accumulate contribution of this k-point to all energies
+                for(int iE=0; iE<nE; ++iE){
+                    const double E = E0 + dE*double(iE);
+                    const double x = (E - e)/eta;
+                    buf[iE] += norm_gauss * std::exp(-0.5*x*x);
+                }
+            }
+        }
+    }
+
+    // reduce buffers
+    for(int tid=0; tid<nthreads; ++tid){
+        for(int iE=0; iE<nE; ++iE){
+            dos[iE] += dos_local[tid][iE];
+        }
+    }
+
+    const double pref = double(g) / (double(Nk)*double(Nk));
+    std::ofstream ofs(dos_dat);
+    ofs << std::setprecision(16);
+    ofs << "# E  DOS(E)   (Gaussian eta="<<eta<<")\n";
+    for(int iE=0; iE<nE; ++iE){
+        const double E = E0 + dE*double(iE);
+        ofs << E << " " << pref * dos[iE] << "\n";
+    }
+}
+
+int main(int argc, char** argv){
+    // ---- defaults ----
+    double t  = 1.0;
+    double tp = -0.2;
+
+    double n_target = 1.0; // spinful: [0,2]
+    double T = 0.02;
+    int Nk_mu = 900;
+    int Nk_fs = 700;
+    int nseg  = 260;
+
+    int nE = 1200;
+    double eta = 0.02;
+
+    // Usage:
+    // ./tbpipe [n_target] [T] [Nk_mu] [Nk_fs] [eta] [t] [tp]
+    if(argc >= 2) n_target = std::atof(argv[1]);
+    if(argc >= 3) T        = std::atof(argv[2]);
+    if(argc >= 4) Nk_mu    = std::atoi(argv[3]);
+    if(argc >= 5) Nk_fs    = std::atoi(argv[4]);
+    if(argc >= 6) eta      = std::atof(argv[5]);
+    if(argc >= 7) t        = std::atof(argv[6]);
+    if(argc >= 8) tp       = std::atof(argv[7]);
+
+    if(Nk_mu < 80) Nk_mu = 80;
+    if(Nk_fs < 80) Nk_fs = 80;
+    if(nseg  < 50) nseg  = 50;
+    if(nE    < 200) nE   = 200;
+    if(eta <= 0.0) throw std::runtime_error("eta must be > 0.");
+    if(T < 0.0)    throw std::runtime_error("T must be >= 0.");
+
+    const int g = 2;
+    const double tol_n = 1e-10;
+
+    std::cout << std::setprecision(16);
+    std::cout << "OpenMP threads = " << omp_get_max_threads() << "\n";
+    std::cout << "params: t="<<t<<" tp="<<tp<<"  n_target="<<n_target
+              << "  T="<<T<<"  Nk_mu="<<Nk_mu<<" Nk_fs="<<Nk_fs
+              << "  eta="<<eta<<"\n";
+
+    // 1) solve mu
+    const double mu = solve_mu_bisect(n_target, t, tp, T, Nk_mu, g, tol_n, 200);
+    const double n_check = filling_n(mu, t, tp, T, Nk_mu, g);
+
+    std::cout << "mu_solved = " << mu << "\n";
+    std::cout << "n(mu_solved) = " << n_check << "  err=" << (n_check - n_target) << "\n";
+
+    // tags
+    const std::string tag = "n"+tag_num(n_target)+"_T"+tag_num(T)+"_t"+tag_num(t)+"_tp"+tag_num(tp);
+    const std::string mu_tag = "mu"+tag_num(mu);
+
+    const std::string band_dat = "band_"+tag+"_"+mu_tag+".dat";
+    const std::string fs_dat   = "fs_"+tag+"_"+mu_tag+".dat";
+    const std::string dos_dat  = "dos_"+tag+"_eta"+tag_num(eta)+".dat";
+
+    const std::string band_plt = "plot_band_"+tag+"_"+mu_tag+".plt";
+    const std::string fs_plt   = "plot_fs_"+tag+"_"+mu_tag+".plt";
+    const std::string dos_plt  = "plot_dos_"+tag+"_eta"+tag_num(eta)+".plt";
+
+    // 2) band
+    {
+        std::ofstream ofs(band_dat);
+        ofs<<std::setprecision(16);
+        ofs<<"# s  E(k)=eps-mu  kx  ky\n";
+
+        auto path = make_path(nseg);
+        double sdist = 0.0;
+        for(size_t i=0;i<path.size();++i){
+            if(i>0){
+                const double dx = path[i].kx - path[i-1].kx;
+                const double dy = path[i].ky - path[i-1].ky;
+                sdist += std::sqrt(dx*dx + dy*dy);
+            }
+            const double e = eps_k(path[i].kx, path[i].ky, t, tp) - mu;
+            ofs<<sdist<<" "<<e<<" "<<path[i].kx<<" "<<path[i].ky<<"\n";
+        }
+    }
+    // gnuplot for band
+    {
+        const double dGX = PI;
+        const double dXM = PI;
+        const double dMG = std::sqrt(2.0)*PI;
+        const double sG0 = 0.0;
+        const double sX  = sG0 + dGX;
+        const double sM  = sX + dXM;
+        const double sG1 = sM + dMG;
+
+        std::ofstream ofs(band_plt);
+        ofs<<"set terminal pngcairo size 1000,700\n";
+        ofs<<"set output 'band_"<<tag<<"_"<<mu_tag<<".png'\n";
+        ofs<<"set xlabel 'k-path'\n";
+        ofs<<"set ylabel 'E(k) = eps(k) - mu'\n";
+        ofs<<"set grid\n";
+        ofs<<"set title 'Band (OpenMP): t-t\\047 square, "<<tag<<", "<<mu_tag<<"'\n";
+        ofs<<"set arrow from "<<sX<<", graph 0 to "<<sX<<", graph 1 nohead dt 2\n";
+        ofs<<"set arrow from "<<sM<<", graph 0 to "<<sM<<", graph 1 nohead dt 2\n";
+        ofs<<"set xtics ('{/Symbol G}' "<<sG0<<", 'X' "<<sX<<", 'M' "<<sM<<", '{/Symbol G}' "<<sG1<<")\n";
+        ofs<<"plot '"<<band_dat<<"' using 1:2 with lines title 'E(k)'\n";
+    }
+
+    // 3) FS extraction (parallel over cells; thread-local vectors)
+    {
+        const double dk = 2.0*PI/double(Nk_fs);
+        auto idx = [&](int ix, int iy){ return ix + (Nk_fs+1)*iy; };
+        std::vector<double> E((Nk_fs+1)*(Nk_fs+1), 0.0);
+        const double eps0 = 1e-3;
+
+        // build grid E(k)=eps-mu
+#pragma omp parallel for collapse(2)
+        for(int iy=0; iy<=Nk_fs; ++iy){
+            for(int ix=0; ix<=Nk_fs; ++ix){
+                const double ky = -PI + dk*double(iy);
+                const double kx = -PI + dk*double(ix);
+                E[idx(ix,iy)] = eps_k(kx,ky,t,tp) - mu;
+            }
+        }
+
+        // per-thread buffers for FS points
+        const int nthreads = omp_get_max_threads();
+        std::vector<std::vector<KPoint>> fs_local(nthreads);
+
+#pragma omp parallel
+        {
+            const int tid = omp_get_thread_num();
+            auto &buf = fs_local[tid];
+            buf.reserve(size_t(Nk_fs)*size_t(Nk_fs)/nthreads);
+
+            auto add_edge = [&](double eA, double eB, double kxA, double kyA, double kxB, double kyB){
+                if(std::abs(eA) < eps0){ buf.push_back({kxA,kyA}); return; }
+                if(std::abs(eB) < eps0){ buf.push_back({kxB,kyB}); return; }
+                if(eA*eB < 0.0){
+                    const double s = lerp_zero(eA,eB);
+                    buf.push_back({kxA + s*(kxB-kxA), kyA + s*(kyB-kyA)});
+                }
+            };
+
+#pragma omp for collapse(2) nowait
+            for(int iy=0; iy<Nk_fs; ++iy){
+                for(int ix=0; ix<Nk_fs; ++ix){
+                    const double ky0 = -PI + dk*double(iy);
+                    const double ky1 = ky0 + dk;
+                    const double kx0 = -PI + dk*double(ix);
+                    const double kx1 = kx0 + dk;
+
+                    const double e00 = E[idx(ix,  iy  )];
+                    const double e10 = E[idx(ix+1,iy  )];
+                    const double e01 = E[idx(ix,  iy+1)];
+                    const double e11 = E[idx(ix+1,iy+1)];
+
+                    add_edge(e00,e10,kx0,ky0,kx1,ky0);
+                    add_edge(e01,e11,kx0,ky1,kx1,ky1);
+                    add_edge(e00,e01,kx0,ky0,kx0,ky1);
+                    add_edge(e10,e11,kx1,ky0,kx1,ky1);
+                }
+            }
+        }
+
+        // merge
+        std::vector<KPoint> fs;
+        size_t total = 0;
+        for(auto &v: fs_local) total += v.size();
+        fs.reserve(total);
+        for(auto &v: fs_local){
+            fs.insert(fs.end(), v.begin(), v.end());
+        }
+
+        std::ofstream ofs(fs_dat);
+        ofs<<std::setprecision(16);
+        ofs<<"# kx ky  (FS points: E(k)=0)\n";
+        for(const auto& p: fs) ofs<<p.kx<<" "<<p.ky<<"\n";
+    }
+
+    // gnuplot for FS
+    {
+        std::ofstream ofs(fs_plt);
+        ofs<<"set terminal pngcairo size 850,850\n";
+        ofs<<"set output 'fs_"<<tag<<"_"<<mu_tag<<".png'\n";
+        ofs<<"set size ratio -1\n";
+        ofs<<"set xrange [-pi:pi]\n";
+        ofs<<"set yrange [-pi:pi]\n";
+        ofs<<"set xlabel 'k_x'\n";
+        ofs<<"set ylabel 'k_y'\n";
+        ofs<<"set grid\n";
+        ofs<<"set title 'FS (OpenMP): "<<tag<<", "<<mu_tag<<"'\n";
+        ofs<<"pi=3.141592653589793\n";
+        ofs<<"set xtics (-pi, -pi/2, 0, pi/2, pi)\n";
+        ofs<<"set ytics (-pi, -pi/2, 0, pi/2, pi)\n";
+        ofs<<"plot '"<<fs_dat<<"' using 1:2 with points pt 7 ps 0.25 title 'FS points'\n";
+    }
+
+    // 4) DOS
+    compute_dos_gaussian(t, tp, Nk_mu, g, nE, eta, dos_dat);
+
+    // gnuplot for DOS
+    {
+        std::ofstream ofs(dos_plt);
+        ofs<<"set terminal pngcairo size 1000,700\n";
+        ofs<<"set output 'dos_"<<tag<<"_eta"<<tag_num(eta)<<".png'\n";
+        ofs<<"set xlabel 'E'\n";
+        ofs<<"set ylabel 'DOS(E)  (per site, spin included)'\n";
+        ofs<<"set grid\n";
+        ofs<<"set title 'DOS (OpenMP): "<<tag<<", eta="<<eta<<"'\n";
+        ofs<<"plot '"<<dos_dat<<"' using 1:2 with lines title 'DOS'\n";
+    }
+
+    std::cout << "\n[done] wrote:\n"
+              << "  mu = " << mu << "\n"
+              << "  " << band_dat << "\n"
+              << "  " << fs_dat   << "\n"
+              << "  " << dos_dat  << "\n"
+              << "  " << band_plt << "\n"
+              << "  " << fs_plt   << "\n"
+              << "  " << dos_plt  << "\n\n";
+
+    std::cout << "Run gnuplot:\n"
+              << "  gnuplot " << band_plt << "\n"
+              << "  gnuplot " << fs_plt   << "\n"
+              << "  gnuplot " << dos_plt  << "\n";
+
     return 0;
 }
 \end{codebox}
